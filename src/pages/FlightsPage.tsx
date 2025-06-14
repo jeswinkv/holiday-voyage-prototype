@@ -10,7 +10,7 @@ import { useState } from "react";
 const flights = [
   {
     id: 1,
-    airline: "British Airways",
+    airline: "IBS Airways",
     flightNumber: "BA 2019",
     departure: {
       time: "10:30",
@@ -29,7 +29,7 @@ const flights = [
   },
   {
     id: 2,
-    airline: "Emirates",
+    airline: "IBS Airways",
     flightNumber: "EK 649",
     departure: {
       time: "14:20",
@@ -48,7 +48,7 @@ const flights = [
   },
   {
     id: 3,
-    airline: "Qatar Airways",
+    airline: "IBS Airways",
     flightNumber: "QR 651",
     departure: {
       time: "08:15",
@@ -67,7 +67,7 @@ const flights = [
   },
   {
     id: 4,
-    airline: "Turkish Airlines",
+    airline: "IBS Airways",
     flightNumber: "TK 1986",
     departure: {
       time: "19:45",
@@ -86,7 +86,7 @@ const flights = [
   },
   {
     id: 5,
-    airline: "Singapore Airlines",
+    airline: "IBS Airways",
     flightNumber: "SQ 317",
     departure: {
       time: "11:50",
