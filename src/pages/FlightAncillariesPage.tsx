@@ -1,6 +1,7 @@
 
 import Header from "@/components/Header";
 import BookingBand from "@/components/BookingBand";
+import LoaderOverlay from "@/components/LoaderOverlay";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Minus } from "lucide-react";
@@ -53,6 +54,7 @@ const ancillaries = [
 const FlightAncillariesPage = () => {
   const navigate = useNavigate();
   const [quantities, setQuantities] = useState<{[key: number]: number}>({});
+  const [showLoader, setShowLoader] = useState(true);
 
   const updateQuantity = (id: number, change: number) => {
     setQuantities(prev => ({
@@ -70,6 +72,14 @@ const FlightAncillariesPage = () => {
   const handleContinue = () => {
     navigate('/passenger-details');
   };
+
+  const handleLoaderComplete = () => {
+    setShowLoader(false);
+  };
+
+  if (showLoader) {
+    return <LoaderOverlay onComplete={handleLoaderComplete} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

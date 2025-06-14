@@ -1,10 +1,11 @@
-
 import Header from "@/components/Header";
 import BookingBand from "@/components/BookingBand";
+import LoaderOverlay from "@/components/LoaderOverlay";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plane, Clock, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const flights = [
   {
@@ -106,10 +107,19 @@ const flights = [
 
 const FlightsPage = () => {
   const navigate = useNavigate();
+  const [showLoader, setShowLoader] = useState(true);
 
   const handleSelectFlight = () => {
     navigate('/flight-ancillaries');
   };
+
+  const handleLoaderComplete = () => {
+    setShowLoader(false);
+  };
+
+  if (showLoader) {
+    return <LoaderOverlay onComplete={handleLoaderComplete} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
