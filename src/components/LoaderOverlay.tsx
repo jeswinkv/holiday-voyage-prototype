@@ -32,7 +32,7 @@ const LoaderOverlay = ({ onComplete }: LoaderOverlayProps) => {
             alt="Loading"
             className="w-24 h-24 rounded-full mx-auto mb-4 animate-pulse"
           />
-          <h2 className="text-2xl font-bold text-ocean-700 mb-2">JV Holidays</h2>
+          <h2 className="text-2xl font-bold text-ocean-700 mb-2">IBS Holidays</h2>
           <p className="text-gray-600">Preparing your perfect vacation...</p>
         </div>
         
