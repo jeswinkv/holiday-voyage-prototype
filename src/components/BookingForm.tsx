@@ -11,9 +11,14 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 
-const cities = [
-  "London", "Manchester", "Birmingham", "Glasgow", "Edinburgh",
-  "Paris", "Maldives", "Dubai", "New York", "Tokyo"
+const majorCities = [
+  "London", "Manchester", "Birmingham", "Glasgow", "Edinburgh", "Liverpool", "Leeds", "Sheffield", 
+  "Bristol", "Newcastle", "Belfast", "Cardiff", "Nottingham", "Leicester", "Coventry"
+];
+
+const majorDestinations = [
+  "Miami", "Barcelona", "Paris", "Dubai", "Maldives", "Bali", "Tokyo", "New York", "Rome", 
+  "Santorini", "Ibiza", "Cancun", "Hawaii", "Thailand", "Morocco", "Turkey", "Egypt", "Greece"
 ];
 
 const BookingForm = () => {
@@ -31,7 +36,7 @@ const BookingForm = () => {
   const handleOriginChange = (value: string) => {
     setOrigin(value);
     if (value.length > 0) {
-      const filtered = cities.filter(city => 
+      const filtered = majorCities.filter(city => 
         city.toLowerCase().includes(value.toLowerCase())
       );
       setOriginSuggestions(filtered);
@@ -43,8 +48,8 @@ const BookingForm = () => {
   const handleDestinationChange = (value: string) => {
     setDestination(value);
     if (value.length > 0) {
-      const filtered = cities.filter(city => 
-        city.toLowerCase().includes(value.toLowerCase())
+      const filtered = majorDestinations.filter(destination => 
+        destination.toLowerCase().includes(value.toLowerCase())
       );
       setDestinationSuggestions(filtered);
     } else {

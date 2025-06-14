@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import BookingBand from "@/components/BookingBand";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Minus, Wifi, Coffee, Zap, Utensils } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -13,7 +13,7 @@ const ancillaries = [
     name: "Premium Meal Selection",
     description: "Choose from gourmet meals prepared by renowned chefs. Includes vegetarian, vegan, and special dietary options",
     price: 35,
-    icon: <Utensils className="w-6 h-6" />,
+    image: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
     category: "Meals"
   },
   {
@@ -21,7 +21,7 @@ const ancillaries = [
     name: "In-Flight WiFi",
     description: "Stay connected throughout your journey with high-speed internet access",
     price: 15,
-    icon: <Wifi className="w-6 h-6" />,
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
     category: "Connectivity"
   },
   {
@@ -29,7 +29,7 @@ const ancillaries = [
     name: "Extra Legroom Seat",
     description: "Enjoy additional comfort with seats offering up to 6 inches of extra legroom",
     price: 85,
-    icon: <Zap className="w-6 h-6" />,
+    image: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
     category: "Seating"
   },
   {
@@ -37,7 +37,7 @@ const ancillaries = [
     name: "Premium Beverage Package",
     description: "Unlimited premium beverages including wine, spirits, and specialty cocktails",
     price: 45,
-    icon: <Coffee className="w-6 h-6" />,
+    image: "https://images.unsplash.com/photo-1470337458703-46ad1756a187?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
     category: "Beverages"
   },
   {
@@ -45,7 +45,7 @@ const ancillaries = [
     name: "Priority Boarding",
     description: "Board the aircraft first and settle in without the crowds",
     price: 25,
-    icon: <Zap className="w-6 h-6" />,
+    image: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
     category: "Service"
   }
 ];
@@ -91,8 +91,12 @@ const FlightAncillariesPage = () => {
             <Card key={item.id} className="hover:shadow-lg transition-shadow duration-300">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4 mb-4">
-                  <div className="w-12 h-12 bg-ocean-100 rounded-full flex items-center justify-center text-ocean-600">
-                    {item.icon}
+                  <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-800 mb-1">
