@@ -163,7 +163,7 @@ const HotelsPage = () => {
                             <img
                               src={image}
                               alt={`${hotel.name} - Image ${index + 1}`}
-                              className="w-full h-64 lg:h-full object-cover"
+                              className="w-full h-48 lg:h-72 object-cover"
                             />
                           </CarouselItem>
                         ))}
