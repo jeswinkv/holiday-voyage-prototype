@@ -10,6 +10,7 @@ interface BookingBandProps {
   children?: number;
   infants?: number;
   totalAmount?: string;
+  showTotal?: boolean;
 }
 
 const BookingBand = ({
@@ -20,7 +21,8 @@ const BookingBand = ({
   adults = 2,
   children = 1,
   infants = 0,
-  totalAmount = "£2,450"
+  totalAmount = "£2,450",
+  showTotal = true
 }: BookingBandProps) => {
   return (
     <div className="bg-white shadow-lg border-b sticky top-16 z-40">
@@ -49,12 +51,14 @@ const BookingBand = ({
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <div className="text-sm text-gray-600">Total</div>
-              <div className="text-xl font-bold text-ocean-700">{totalAmount}</div>
+          {showTotal && (
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <div className="text-sm text-gray-600">Total</div>
+                <div className="text-xl font-bold text-ocean-700">{totalAmount}</div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
