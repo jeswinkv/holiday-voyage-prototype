@@ -1,3 +1,4 @@
+
 import Header from "@/components/Header";
 import BookingBand from "@/components/BookingBand";
 import LoaderOverlay from "@/components/LoaderOverlay";
@@ -11,7 +12,7 @@ const flights = [
   {
     id: 1,
     airline: "IBS Airways",
-    flightNumber: "BA 2019",
+    flightNumber: "IA 2019",
     departure: {
       time: "10:30",
       airport: "LHR",
@@ -30,7 +31,7 @@ const flights = [
   {
     id: 2,
     airline: "IBS Airways",
-    flightNumber: "EK 649",
+    flightNumber: "IA 649",
     departure: {
       time: "14:20",
       airport: "LHR",
@@ -49,7 +50,7 @@ const flights = [
   {
     id: 3,
     airline: "IBS Airways",
-    flightNumber: "QR 651",
+    flightNumber: "IA 651",
     departure: {
       time: "08:15",
       airport: "LHR",
@@ -68,7 +69,7 @@ const flights = [
   {
     id: 4,
     airline: "IBS Airways",
-    flightNumber: "TK 1986",
+    flightNumber: "IA 1986",
     departure: {
       time: "19:45",
       airport: "LHR",
@@ -87,7 +88,7 @@ const flights = [
   {
     id: 5,
     airline: "IBS Airways",
-    flightNumber: "SQ 317",
+    flightNumber: "IA 317",
     departure: {
       time: "11:50",
       airport: "LHR",
