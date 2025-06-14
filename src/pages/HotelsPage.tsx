@@ -4,6 +4,7 @@ import BookingBand from "@/components/BookingBand";
 import LoaderOverlay from "@/components/LoaderOverlay";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Star, MapPin, Wifi, Car, Coffee, Waves } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -64,6 +65,7 @@ const hotels = [
 const HotelsPage = () => {
   const navigate = useNavigate();
   const [showLoader, setShowLoader] = useState(true);
+  const [sortBy, setSortBy] = useState("recommended");
 
   const handleSelectHotel = () => {
     navigate('/hotel-ancillaries');
@@ -73,9 +75,25 @@ const HotelsPage = () => {
     setShowLoader(false);
   };
 
+  const getSortedHotels = () => {
+    const hotelsCopy = [...hotels];
+    
+    switch (sortBy) {
+      case "low-to-high":
+        return hotelsCopy.sort((a, b) => a.price - b.price);
+      case "high-to-low":
+        return hotelsCopy.sort((a, b) => b.price - a.price);
+      case "recommended":
+      default:
+        return hotelsCopy.sort((a, b) => b.rating - a.rating);
+    }
+  };
+
   if (showLoader) {
     return <LoaderOverlay onComplete={handleLoaderComplete} />;
   }
+
+  const sortedHotels = getSortedHotels();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -84,16 +102,34 @@ const HotelsPage = () => {
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Choose Your Perfect Maldivian Paradise
-          </h1>
-          <p className="text-gray-600">
-            {hotels.length} luxury resorts found in the Maldives
-          </p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                Choose Your Perfect Maldivian Paradise
+              </h1>
+              <p className="text-gray-600">
+                {hotels.length} luxury resorts found in the Maldives
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Sort by:</span>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recommended">Recommended</SelectItem>
+                  <SelectItem value="low-to-high">Price: Low to High</SelectItem>
+                  <SelectItem value="high-to-low">Price: High to Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-6">
-          {hotels.map((hotel) => (
+          {sortedHotels.map((hotel) => (
             <Card key={hotel.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
               <CardContent className="p-0">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">

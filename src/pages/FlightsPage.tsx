@@ -4,6 +4,7 @@ import BookingBand from "@/components/BookingBand";
 import LoaderOverlay from "@/components/LoaderOverlay";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plane, Clock, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -109,6 +110,7 @@ const flights = [
 const FlightsPage = () => {
   const navigate = useNavigate();
   const [showLoader, setShowLoader] = useState(true);
+  const [sortBy, setSortBy] = useState("recommended");
 
   const handleSelectFlight = () => {
     navigate('/flight-ancillaries');
@@ -118,9 +120,27 @@ const FlightsPage = () => {
     setShowLoader(false);
   };
 
+  const getSortedFlights = () => {
+    const flightsCopy = [...flights];
+    
+    switch (sortBy) {
+      case "low-to-high":
+        return flightsCopy.sort((a, b) => a.price - b.price);
+      case "high-to-low":
+        return flightsCopy.sort((a, b) => b.price - a.price);
+      case "recommended":
+      default:
+        // For flights, recommended could be based on a combination of factors
+        // Here we'll sort by price (ascending) as a simple default
+        return flightsCopy.sort((a, b) => a.price - b.price);
+    }
+  };
+
   if (showLoader) {
     return <LoaderOverlay onComplete={handleLoaderComplete} />;
   }
+
+  const sortedFlights = getSortedFlights();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -129,16 +149,34 @@ const FlightsPage = () => {
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Choose Your Flight
-          </h1>
-          <p className="text-gray-600">
-            {flights.length} flights found for your journey
-          </p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                Choose Your Flight
+              </h1>
+              <p className="text-gray-600">
+                {flights.length} flights found for your journey
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Sort by:</span>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recommended">Recommended</SelectItem>
+                  <SelectItem value="low-to-high">Price: Low to High</SelectItem>
+                  <SelectItem value="high-to-low">Price: High to Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-4">
-          {flights.map((flight) => (
+          {sortedFlights.map((flight) => (
             <Card key={flight.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
               <CardContent className="p-6">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-center">
