@@ -7,9 +7,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { DateRange } from "react-day-picker";
 
 const majorCities = [
   "London", "Manchester", "Birmingham", "Glasgow", "Edinburgh", "Liverpool", "Leeds", "Sheffield", 
@@ -25,8 +26,7 @@ const BookingForm = () => {
   const navigate = useNavigate();
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
-  const [outboundDate, setOutboundDate] = useState<Date>();
-  const [inboundDate, setInboundDate] = useState<Date>();
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [adults, setAdults] = useState("2");
   const [children, setChildren] = useState("0");
   const [infants, setInfants] = useState("0");
@@ -59,6 +59,23 @@ const BookingForm = () => {
 
   const handleSearch = () => {
     navigate('/hotels');
+  };
+
+  const getTripLength = () => {
+    if (dateRange?.from && dateRange?.to) {
+      const days = differenceInDays(dateRange.to, dateRange.from);
+      return days > 0 ? `${days} day${days > 1 ? 's' : ''}` : '';
+    }
+    return '';
+  };
+
+  const getDateRangeText = () => {
+    if (dateRange?.from && dateRange?.to) {
+      return `${format(dateRange.from, "MMM dd")} - ${format(dateRange.to, "MMM dd, yyyy")}`;
+    } else if (dateRange?.from) {
+      return `${format(dateRange.from, "MMM dd, yyyy")} - Select return date`;
+    }
+    return "Select travel dates";
   };
 
   return (
@@ -126,55 +143,33 @@ const BookingForm = () => {
               </div>
             </div>
 
-            {/* Outbound Date */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Departure</label>
+            {/* Date Range Picker - spans 2 columns */}
+            <div className="space-y-2 lg:col-span-2">
+              <label className="text-sm font-medium text-gray-700">Travel Dates</label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
                       "w-full justify-start text-left font-normal",
-                      !outboundDate && "text-muted-foreground"
+                      !dateRange?.from && "text-muted-foreground"
                     )}
                   >
                     <Calendar className="mr-2 h-4 w-4" />
-                    {outboundDate ? format(outboundDate, "PPP") : <span>Pick a date</span>}
+                    <span className="flex-1">{getDateRangeText()}</span>
+                    {getTripLength() && (
+                      <span className="ml-2 px-2 py-1 bg-ocean-100 text-ocean-700 text-xs font-medium rounded">
+                        {getTripLength()}
+                      </span>
+                    )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <CalendarComponent
-                    mode="single"
-                    selected={outboundDate}
-                    onSelect={setOutboundDate}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            {/* Return Date */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Return</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !inboundDate && "text-muted-foreground"
-                    )}
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {inboundDate ? format(inboundDate, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={inboundDate}
-                    onSelect={setInboundDate}
+                    mode="range"
+                    selected={dateRange}
+                    onSelect={setDateRange}
+                    numberOfMonths={2}
                     initialFocus
                     className="pointer-events-auto"
                   />
