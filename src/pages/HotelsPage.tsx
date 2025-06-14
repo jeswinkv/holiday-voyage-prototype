@@ -5,6 +5,7 @@ import LoaderOverlay from "@/components/LoaderOverlay";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Star, MapPin, Wifi, Car, Coffee, Waves } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -13,7 +14,11 @@ const hotels = [
   {
     id: 1,
     name: "Azure Lagoon Resort & Spa",
-    image: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+    ],
     rating: 4.9,
     location: "North Malé Atoll, Maldives",
     description: "An exclusive adults-only resort featuring 120 overwater and beachfront villas with private pools. Each villa offers panoramic ocean views, direct lagoon access, and personalized butler service. The resort boasts a world-class ESPA spa, five dining venues including underwater restaurant Poseidon, and endless water sports activities. Perfect for romantic getaways with sunset dolphin cruises and private beach dining experiences.",
@@ -23,7 +28,11 @@ const hotels = [
   {
     id: 2,
     name: "Coral Paradise Island Resort",
-    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1452378174528-3090a4bba7b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1500673922987-e212871fec22?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+    ],
     rating: 4.8,
     location: "South Malé Atoll, Maldives",
     description: "A family-friendly resort set on a pristine coral island with crystal-clear turquoise waters. Features 200 beach and water villas, each with private terraces and direct beach or lagoon access. The resort offers a kids' club, multiple pools, vibrant coral reef for snorkeling, and authentic Maldivian cultural experiences. Enjoy fresh seafood at the overwater restaurant and unwind at the beachfront spa pavilions.",
@@ -33,7 +42,11 @@ const hotels = [
   {
     id: 3,
     name: "Sunset Cove Luxury Retreat",
-    image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+    ],
     rating: 4.7,
     location: "Baa Atoll, Maldives",
     description: "Boutique eco-luxury resort located in UNESCO Biosphere Reserve, offering 85 sustainable villas built with local materials. Each villa features solar panels, rainwater harvesting, and organic gardens. The resort is renowned for manta ray diving, whale shark encounters, and marine conservation programs. Guests enjoy organic cuisine at three restaurants, holistic wellness treatments, and guided nature walks through the island's tropical vegetation.",
@@ -43,7 +56,11 @@ const hotels = [
   {
     id: 4,
     name: "Pearl Island Beach Resort",
-    image: "https://images.unsplash.com/photo-1452378174528-3090a4bba7b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+    ],
     rating: 4.6,
     location: "Ari Atoll, Maldives",
     description: "Contemporary resort featuring 150 modern villas with minimalist design and floor-to-ceiling windows. Each villa includes private infinity pools, outdoor showers, and smart home technology. The resort offers unique experiences like underwater yoga, night fishing with locals, cooking classes with resort chefs, and private sandbank picnics. Three award-winning restaurants serve international cuisine with stunning ocean views.",
@@ -53,7 +70,11 @@ const hotels = [
   {
     id: 5,
     name: "Turquoise Dreams Water Villas",
-    image: "https://images.unsplash.com/photo-1500673922987-e212871fec22?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1452378174528-3090a4bba7b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+    ],
     rating: 4.8,
     location: "Lhaviyani Atoll, Maldives",
     description: "Adults-only overwater resort with 95 spacious water villas connected by wooden walkways above the lagoon. Each villa features glass floor panels for marine life viewing, private sundeck with hammock, and direct lagoon access via steps. The resort specializes in romantic experiences including floating breakfast service, couples' spa treatments in overwater pavilions, and private yacht excursions to uninhabited islands with personalized beach setups.",
@@ -133,13 +154,23 @@ const HotelsPage = () => {
             <Card key={hotel.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
               <CardContent className="p-0">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
-                  {/* Hotel Image */}
-                  <div className="lg:col-span-1">
-                    <img
-                      src={hotel.image}
-                      alt={hotel.name}
-                      className="w-full h-64 lg:h-full object-cover"
-                    />
+                  {/* Hotel Image Carousel */}
+                  <div className="lg:col-span-1 relative">
+                    <Carousel className="w-full">
+                      <CarouselContent>
+                        {hotel.images.map((image, index) => (
+                          <CarouselItem key={index}>
+                            <img
+                              src={image}
+                              alt={`${hotel.name} - Image ${index + 1}`}
+                              className="w-full h-64 lg:h-full object-cover"
+                            />
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      <CarouselPrevious className="left-2" />
+                      <CarouselNext className="right-2" />
+                    </Carousel>
                   </div>
 
                   {/* Hotel Details */}
