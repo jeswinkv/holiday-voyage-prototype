@@ -42,7 +42,7 @@
 
 @layer components {
   .gradient-overlay {
-    background: linear-gradient(45deg, rgba(14, 165, 233, 0.9) 0%, rgba(249, 115, 22, 0.8) 100%);
+    background: linear-gradient(45deg, rgba(14, 165, 233, 0.3) 0%, rgba(249, 115, 22, 0.25) 100%);
   }
   
   .glass-effect {
