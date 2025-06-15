@@ -11,33 +11,59 @@ import { format, differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { DateRange } from "react-day-picker";
+import { useBooking } from "@/contexts/BookingContext";
 
-const majorCities = [
-  "London", "Manchester", "Birmingham", "Glasgow", "Edinburgh", "Liverpool", "Leeds", "Sheffield", 
-  "Bristol", "Newcastle", "Belfast", "Cardiff", "Nottingham", "Leicester", "Coventry"
+const majorCitiesWithCodes = [
+  { city: "London", code: "LHR" },
+  { city: "Manchester", code: "MAN" },
+  { city: "Birmingham", code: "BHX" },
+  { city: "Glasgow", code: "GLA" },
+  { city: "Edinburgh", code: "EDI" },
+  { city: "Liverpool", code: "LPL" },
+  { city: "Leeds", code: "LBA" },
+  { city: "Sheffield", code: "SHF" },
+  { city: "Bristol", code: "BRS" },
+  { city: "Newcastle", code: "NCL" },
+  { city: "Belfast", code: "BFS" },
+  { city: "Cardiff", code: "CWL" },
+  { city: "Nottingham", code: "NQT" },
+  { city: "Leicester", code: "LCR" },
+  { city: "Coventry", code: "CVT" }
 ];
 
-const majorDestinations = [
-  "Miami", "Barcelona", "Paris", "Dubai", "Maldives", "Bali", "Tokyo", "New York", "Rome", 
-  "Santorini", "Ibiza", "Cancun", "Hawaii", "Thailand", "Morocco", "Turkey", "Egypt", "Greece"
+const majorDestinationsWithCodes = [
+  { city: "Miami", code: "MIA" },
+  { city: "Barcelona", code: "BCN" },
+  { city: "Paris", code: "CDG" },
+  { city: "Dubai", code: "DXB" },
+  { city: "Maldives", code: "MLE" },
+  { city: "Bali", code: "DPS" },
+  { city: "Tokyo", code: "NRT" },
+  { city: "New York", code: "JFK" },
+  { city: "Rome", code: "FCO" },
+  { city: "Santorini", code: "JTR" },
+  { city: "Ibiza", code: "IBZ" },
+  { city: "Cancun", code: "CUN" },
+  { city: "Hawaii", code: "HNL" },
+  { city: "Thailand", code: "BKK" },
+  { city: "Morocco", code: "CMN" },
+  { city: "Turkey", code: "IST" },
+  { city: "Egypt", code: "CAI" },
+  { city: "Greece", code: "ATH" }
 ];
 
 const BookingForm = () => {
   const navigate = useNavigate();
-  const [origin, setOrigin] = useState("");
-  const [destination, setDestination] = useState("");
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [adults, setAdults] = useState("2");
-  const [children, setChildren] = useState("0");
-  const [infants, setInfants] = useState("0");
-  const [originSuggestions, setOriginSuggestions] = useState<string[]>([]);
-  const [destinationSuggestions, setDestinationSuggestions] = useState<string[]>([]);
+  const { bookingState, updateBookingState } = useBooking();
+  const [originSuggestions, setOriginSuggestions] = useState<typeof majorCitiesWithCodes>([]);
+  const [destinationSuggestions, setDestinationSuggestions] = useState<typeof majorDestinationsWithCodes>([]);
 
   const handleOriginChange = (value: string) => {
-    setOrigin(value);
+    updateBookingState({ origin: value });
     if (value.length > 0) {
-      const filtered = majorCities.filter(city => 
-        city.toLowerCase().includes(value.toLowerCase())
+      const filtered = majorCitiesWithCodes.filter(item => 
+        item.city.toLowerCase().includes(value.toLowerCase()) ||
+        item.code.toLowerCase().includes(value.toLowerCase())
       );
       setOriginSuggestions(filtered);
     } else {
@@ -46,10 +72,11 @@ const BookingForm = () => {
   };
 
   const handleDestinationChange = (value: string) => {
-    setDestination(value);
+    updateBookingState({ destination: value });
     if (value.length > 0) {
-      const filtered = majorDestinations.filter(destination => 
-        destination.toLowerCase().includes(value.toLowerCase())
+      const filtered = majorDestinationsWithCodes.filter(item => 
+        item.city.toLowerCase().includes(value.toLowerCase()) ||
+        item.code.toLowerCase().includes(value.toLowerCase())
       );
       setDestinationSuggestions(filtered);
     } else {
@@ -62,18 +89,18 @@ const BookingForm = () => {
   };
 
   const getTripLength = () => {
-    if (dateRange?.from && dateRange?.to) {
-      const days = differenceInDays(dateRange.to, dateRange.from);
+    if (bookingState.dateRange?.from && bookingState.dateRange?.to) {
+      const days = differenceInDays(bookingState.dateRange.to, bookingState.dateRange.from);
       return days > 0 ? `${days} day${days > 1 ? 's' : ''}` : '';
     }
     return '';
   };
 
   const getDateRangeText = () => {
-    if (dateRange?.from && dateRange?.to) {
-      return `${format(dateRange.from, "MMM dd")} - ${format(dateRange.to, "MMM dd, yyyy")}`;
-    } else if (dateRange?.from) {
-      return `${format(dateRange.from, "MMM dd, yyyy")} - Select return date`;
+    if (bookingState.dateRange?.from && bookingState.dateRange?.to) {
+      return `${format(bookingState.dateRange.from, "MMM dd")} - ${format(bookingState.dateRange.to, "MMM dd, yyyy")}`;
+    } else if (bookingState.dateRange?.from) {
+      return `${format(bookingState.dateRange.from, "MMM dd, yyyy")} - Select return date`;
     }
     return "Select travel dates";
   };
@@ -90,22 +117,22 @@ const BookingForm = () => {
                 <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Origin city"
-                  value={origin}
+                  value={bookingState.origin}
                   onChange={(e) => handleOriginChange(e.target.value)}
                   className="pl-10"
                 />
                 {originSuggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 bg-white border rounded-md shadow-lg z-20 max-h-40 overflow-y-auto">
-                    {originSuggestions.map((city) => (
+                    {originSuggestions.map((item) => (
                       <button
-                        key={city}
+                        key={item.code}
                         onClick={() => {
-                          setOrigin(city);
+                          updateBookingState({ origin: `${item.city} (${item.code})` });
                           setOriginSuggestions([]);
                         }}
                         className="w-full text-left px-3 py-2 hover:bg-gray-100 transition-colors"
                       >
-                        {city}
+                        {item.city} ({item.code})
                       </button>
                     ))}
                   </div>
@@ -120,22 +147,22 @@ const BookingForm = () => {
                 <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Destination city"
-                  value={destination}
+                  value={bookingState.destination}
                   onChange={(e) => handleDestinationChange(e.target.value)}
                   className="pl-10"
                 />
                 {destinationSuggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 bg-white border rounded-md shadow-lg z-20 max-h-40 overflow-y-auto">
-                    {destinationSuggestions.map((city) => (
+                    {destinationSuggestions.map((item) => (
                       <button
-                        key={city}
+                        key={item.code}
                         onClick={() => {
-                          setDestination(city);
+                          updateBookingState({ destination: `${item.city} (${item.code})` });
                           setDestinationSuggestions([]);
                         }}
                         className="w-full text-left px-3 py-2 hover:bg-gray-100 transition-colors"
                       >
-                        {city}
+                        {item.city} ({item.code})
                       </button>
                     ))}
                   </div>
@@ -152,7 +179,7 @@ const BookingForm = () => {
                     variant="outline"
                     className={cn(
                       "w-full justify-start text-left font-normal",
-                      !dateRange?.from && "text-muted-foreground"
+                      !bookingState.dateRange?.from && "text-muted-foreground"
                     )}
                   >
                     <Calendar className="mr-2 h-4 w-4" />
@@ -167,8 +194,8 @@ const BookingForm = () => {
                 <PopoverContent className="w-auto p-0" align="start">
                   <CalendarComponent
                     mode="range"
-                    selected={dateRange}
-                    onSelect={setDateRange}
+                    selected={bookingState.dateRange}
+                    onSelect={(dateRange) => updateBookingState({ dateRange })}
                     numberOfMonths={2}
                     initialFocus
                     className="pointer-events-auto"
@@ -182,7 +209,7 @@ const BookingForm = () => {
             {/* Adults */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Adults</label>
-              <Select value={adults} onValueChange={setAdults}>
+              <Select value={bookingState.adults} onValueChange={(value) => updateBookingState({ adults: value })}>
                 <SelectTrigger>
                   <Users className="mr-2 h-4 w-4" />
                   <SelectValue />
@@ -198,7 +225,7 @@ const BookingForm = () => {
             {/* Children */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Children</label>
-              <Select value={children} onValueChange={setChildren}>
+              <Select value={bookingState.children} onValueChange={(value) => updateBookingState({ children: value })}>
                 <SelectTrigger>
                   <Users className="mr-2 h-4 w-4" />
                   <SelectValue />
@@ -214,7 +241,7 @@ const BookingForm = () => {
             {/* Infants */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Infants</label>
-              <Select value={infants} onValueChange={setInfants}>
+              <Select value={bookingState.infants} onValueChange={(value) => updateBookingState({ infants: value })}>
                 <SelectTrigger>
                   <Users className="mr-2 h-4 w-4" />
                   <SelectValue />
