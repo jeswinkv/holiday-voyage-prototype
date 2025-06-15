@@ -1,47 +1,58 @@
+
 import Header from "@/components/Header";
 import BookingBand from "@/components/BookingBand";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CreditCard, Smartphone, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useBooking } from "@/contexts/BookingContext";
 
 const SummaryPage = () => {
   const navigate = useNavigate();
-  const { bookingState } = useBooking();
+  const { bookingState, getNumberOfNights } = useBooking();
 
   const handlePayment = () => {
     navigate('/confirmation');
   };
 
-  const bookingSummary = {
+  // Sample data - in a real app, this would come from the booking context
+  // For now, using placeholder data that matches typical selections
+  const selectedItems = {
     hotel: {
       name: "Ocean View Resort & Spa",
-      nights: 7,
+      nights: getNumberOfNights(),
       pricePerNight: 450,
-      total: 3150
+      total: 450 * getNumberOfNights()
     },
     hotelAncillaries: [
-      { name: "Couples Spa Package", quantity: 1, price: 180 },
-      { name: "Sunset Dolphin Cruise", quantity: 2, price: 170 }
+      { name: "Couples Spa Package", quantity: 1, price: 180, total: 180 },
+      { name: "Sunset Dolphin Cruise", quantity: 2, price: 85, total: 170 }
     ],
     flight: {
-      airline: "Qatar Airways",
-      route: "London to Maldives",
-      passengers: 3,
+      airline: "IBS Airways",
+      route: `${bookingState.origin || 'London'} to ${bookingState.destination || 'Maldives'}`,
+      passengers: parseInt(bookingState.adults) + parseInt(bookingState.children) + parseInt(bookingState.infants),
       pricePerPerson: 780,
-      total: 2340
+      total: 780 * (parseInt(bookingState.adults) + parseInt(bookingState.children) + parseInt(bookingState.infants))
     },
     flightAncillaries: [
-      { name: "Extra Legroom Seat", quantity: 2, price: 170 },
-      { name: "Premium Meal Selection", quantity: 3, price: 105 }
+      { name: "Extra Legroom Seat", quantity: 2, price: 85, total: 170 },
+      { name: "Premium Meal Selection", quantity: 3, price: 35, total: 105 }
     ]
   };
 
-  const calculateTotal = () => {
-    return bookingState.totalAmount;
+  const calculateSubtotal = () => {
+    return selectedItems.hotel.total + 
+           selectedItems.hotelAncillaries.reduce((sum, item) => sum + item.total, 0) +
+           selectedItems.flight.total +
+           selectedItems.flightAncillaries.reduce((sum, item) => sum + item.total, 0);
   };
+
+  const subtotal = calculateSubtotal();
+  const taxesAndFees = 185;
+  const finalTotal = subtotal + taxesAndFees;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -65,12 +76,37 @@ const SummaryPage = () => {
             <Card>
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Hotel Accommodation</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Selected Resort & Extras</span>
-                    <span className="font-medium">Included in total</span>
-                  </div>
-                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Item</TableHead>
+                      <TableHead>Details</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="font-medium">{selectedItems.hotel.name}</TableCell>
+                      <TableCell>
+                        {selectedItems.hotel.nights} night{selectedItems.hotel.nights > 1 ? 's' : ''} × £{selectedItems.hotel.pricePerNight}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold">
+                        £{selectedItems.hotel.total.toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                    {selectedItems.hotelAncillaries.map((item, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">{item.name}</TableCell>
+                        <TableCell>
+                          {item.quantity} × £{item.price}
+                        </TableCell>
+                        <TableCell className="text-right font-semibold">
+                          £{item.total}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
 
@@ -78,12 +114,38 @@ const SummaryPage = () => {
             <Card>
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Flight Details</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Selected Flight & Extras</span>
-                    <span className="font-medium">Included in total</span>
-                  </div>
-                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Item</TableHead>
+                      <TableHead>Details</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="font-medium">{selectedItems.flight.airline}</TableCell>
+                      <TableCell>
+                        {selectedItems.flight.route}<br />
+                        {selectedItems.flight.passengers} passenger{selectedItems.flight.passengers > 1 ? 's' : ''} × £{selectedItems.flight.pricePerPerson}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold">
+                        £{selectedItems.flight.total.toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                    {selectedItems.flightAncillaries.map((item, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">{item.name}</TableCell>
+                        <TableCell>
+                          {item.quantity} × £{item.price}
+                        </TableCell>
+                        <TableCell className="text-right font-semibold">
+                          £{item.total}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </div>
@@ -131,16 +193,16 @@ const SummaryPage = () => {
                 <div className="space-y-2 mb-6">
                   <div className="flex justify-between text-sm">
                     <span>Subtotal</span>
-                    <span>£{calculateTotal()}</span>
+                    <span>£{subtotal.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Taxes & Fees</span>
-                    <span>£185</span>
+                    <span>£{taxesAndFees}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total Amount</span>
-                    <span className="text-ocean-700">£{calculateTotal() + 185}</span>
+                    <span className="text-ocean-700">£{finalTotal.toLocaleString()}</span>
                   </div>
                 </div>
 
