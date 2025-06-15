@@ -1,4 +1,3 @@
-
 import Header from "@/components/Header";
 import BookingBand from "@/components/BookingBand";
 import LoaderOverlay from "@/components/LoaderOverlay";
@@ -49,164 +48,55 @@ const ancillaries = [
 
 const HotelAncillariesPage = () => {
   const navigate = useNavigate();
-  const { addToTotal, subtractFromTotal, setTotal, getNumberOfNights, bookingState } = useBooking();
+  const { addToTotal, subtractFromTotal } = useBooking();
   const [quantities, setQuantities] = useState<{[key: number]: number}>({});
   const [showLoader, setShowLoader] = useState(true);
-
-  useEffect(() => {
-    const initializePage = async () => {
-      try {
-        console.log('HotelAncillariesPage: Starting initialization...');
-        console.log('BookingState:', bookingState);
-        
-        let calculatedTotal = 0;
-        
-        // Safely get saved data from localStorage
-        const savedHotel = localStorage.getItem('selectedHotel');
-        const savedFlight = localStorage.getItem('selectedFlight');
-        
-        console.log('SavedHotel:', savedHotel);
-        console.log('SavedFlight:', savedFlight);
-        
-        // Add hotel cost with safe parsing
-        if (savedHotel && savedHotel !== 'null') {
-          try {
-            const hotelData = JSON.parse(savedHotel);
-            console.log('Parsed hotel data:', hotelData);
-            
-            // Safe number of nights calculation
-            let nights = 7; // default
-            try {
-              nights = getNumberOfNights();
-            } catch (e) {
-              console.warn('Error getting number of nights, using default:', e);
-            }
-            
-            console.log('Number of nights:', nights);
-            const hotelPrice = Number(hotelData.price || hotelData.pricePerNight || 0);
-            const hotelTotal = hotelPrice * nights;
-            calculatedTotal += hotelTotal;
-            console.log('Hotel total:', hotelTotal);
-          } catch (e) {
-            console.error('Error parsing hotel data:', e);
-          }
-        }
-        
-        // Add flight cost with safe parsing
-        if (savedFlight && savedFlight !== 'null') {
-          try {
-            const flightData = JSON.parse(savedFlight);
-            console.log('Parsed flight data:', flightData);
-            
-            // Safe passenger calculation with fallbacks
-            const adultsNum = parseInt(String(bookingState?.adults || '2')) || 2;
-            const childrenNum = parseInt(String(bookingState?.children || '0')) || 0;
-            const infantsNum = parseInt(String(bookingState?.infants || '0')) || 0;
-            const passengers = adultsNum + childrenNum + infantsNum;
-            
-            console.log('Number of passengers:', passengers);
-            const flightPrice = Number(flightData.price || flightData.pricePerPerson || 0);
-            const flightTotal = flightPrice * passengers;
-            calculatedTotal += flightTotal;
-            console.log('Flight total:', flightTotal);
-          } catch (e) {
-            console.error('Error parsing flight data:', e);
-          }
-        }
-        
-        console.log('Final calculated total:', calculatedTotal);
-        
-        // Safe total setting
-        try {
-          setTotal(calculatedTotal);
-        } catch (e) {
-          console.error('Error setting total:', e);
-        }
-        
-        console.log('HotelAncillariesPage: Initialization complete');
-        
-      } catch (error) {
-        console.error('Error in HotelAncillariesPage initialization:', error);
-      }
-    };
-
-    initializePage();
-  }, [setTotal, getNumberOfNights, bookingState]);
+  const [previousQuantities, setPreviousQuantities] = useState<{[key: number]: number}>({});
 
   const updateQuantity = (id: number, change: number) => {
-    try {
-      const currentQty = quantities[id] || 0;
-      const newQty = Math.max(0, currentQty + change);
-      
-      setQuantities(prev => ({
-        ...prev,
-        [id]: newQty
-      }));
+    const currentQty = quantities[id] || 0;
+    const newQty = Math.max(0, currentQty + change);
+    
+    setQuantities(prev => ({
+      ...prev,
+      [id]: newQty
+    }));
 
-      // Update total amount
-      const ancillary = ancillaries.find(item => item.id === id);
-      if (ancillary) {
-        if (change > 0) {
-          addToTotal(ancillary.price);
-        } else if (change < 0 && currentQty > 0) {
-          subtractFromTotal(ancillary.price);
-        }
+    // Update total amount
+    const ancillary = ancillaries.find(item => item.id === id);
+    if (ancillary) {
+      if (change > 0) {
+        addToTotal(ancillary.price);
+      } else if (change < 0 && currentQty > 0) {
+        subtractFromTotal(ancillary.price);
       }
-    } catch (error) {
-      console.error('Error updating quantity:', error);
     }
   };
 
   const getTotalCost = () => {
-    try {
-      return ancillaries.reduce((total, item) => {
-        return total + (item.price * (quantities[item.id] || 0));
-      }, 0);
-    } catch (error) {
-      console.error('Error calculating total cost:', error);
-      return 0;
-    }
+    return ancillaries.reduce((total, item) => {
+      return total + (item.price * (quantities[item.id] || 0));
+    }, 0);
   };
 
   const handleContinue = () => {
-    try {
-      // Save selected hotel ancillaries to localStorage
-      const selectedAncillaries: {[key: string]: number} = {};
-      Object.entries(quantities).forEach(([id, quantity]) => {
-        if (quantity > 0) {
-          const ancillary = ancillaries.find(item => item.id === parseInt(id));
-          if (ancillary) {
-            selectedAncillaries[ancillary.name] = quantity;
-          }
+    // Save selected hotel ancillaries to localStorage
+    const selectedAncillaries: {[key: string]: number} = {};
+    Object.entries(quantities).forEach(([id, quantity]) => {
+      if (quantity > 0) {
+        const ancillary = ancillaries.find(item => item.id === parseInt(id));
+        if (ancillary) {
+          selectedAncillaries[ancillary.name] = quantity;
         }
-      });
-      localStorage.setItem('selectedHotelAncillaries', JSON.stringify(selectedAncillaries));
-      
-      // Check if we're in editing mode
-      const isEditingHotel = localStorage.getItem('editingHotel');
-      if (isEditingHotel) {
-        // Clear the editing flag and go back to summary
-        localStorage.removeItem('editingHotel');
-        navigate('/summary');
-      } else {
-        // Normal flow - continue to flights
-        navigate('/flights');
       }
-    } catch (error) {
-      console.error('Error in handleContinue:', error);
-      // Continue anyway
-      navigate('/flights');
-    }
+    });
+    localStorage.setItem('selectedHotelAncillaries', JSON.stringify(selectedAncillaries));
+    
+    navigate('/flights');
   };
 
   const handleLoaderComplete = () => {
-    try {
-      console.log('Loader complete, hiding loader...');
-      setShowLoader(false);
-    } catch (error) {
-      console.error('Error in handleLoaderComplete:', error);
-      setShowLoader(false); // Hide loader anyway
-    }
+    setShowLoader(false);
   };
 
   if (showLoader) {

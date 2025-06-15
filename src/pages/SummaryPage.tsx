@@ -1,11 +1,10 @@
-
 import Header from "@/components/Header";
 import BookingBand from "@/components/BookingBand";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CreditCard, Smartphone, Building2, ArrowLeft, Edit } from "lucide-react";
+import { CreditCard, Smartphone, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useBooking } from "@/contexts/BookingContext";
 import { useEffect, useState } from "react";
@@ -38,7 +37,7 @@ interface BookingSummaryData {
 
 const SummaryPage = () => {
   const navigate = useNavigate();
-  const { bookingState, getNumberOfNights, setTotal } = useBooking();
+  const { bookingState, getNumberOfNights } = useBooking();
   const [bookingSummary, setBookingSummary] = useState<BookingSummaryData>({
     hotel: null,
     hotelAncillaries: [],
@@ -47,11 +46,20 @@ const SummaryPage = () => {
   });
 
   useEffect(() => {
+    console.log('Loading booking summary data...');
+    console.log('LocalStorage keys:', Object.keys(localStorage));
+    
     // Load booking summary from localStorage
     const savedHotel = localStorage.getItem('selectedHotel');
     const savedHotelAncillaries = localStorage.getItem('selectedHotelAncillaries');
     const savedFlight = localStorage.getItem('selectedFlight');
     const savedFlightAncillaries = localStorage.getItem('selectedFlightAncillaries');
+
+    console.log('Raw data from localStorage:');
+    console.log('Hotel:', savedHotel);
+    console.log('Hotel ancillaries:', savedHotelAncillaries);
+    console.log('Flight:', savedFlight);
+    console.log('Flight ancillaries:', savedFlightAncillaries);
 
     const summary: BookingSummaryData = {
       hotel: null,
@@ -64,6 +72,7 @@ const SummaryPage = () => {
     if (savedHotel && savedHotel !== 'null') {
       try {
         const hotelData = JSON.parse(savedHotel);
+        console.log('Parsed hotel data:', hotelData);
         const nights = getNumberOfNights();
         summary.hotel = {
           name: hotelData.name || "Selected Hotel",
@@ -80,6 +89,7 @@ const SummaryPage = () => {
     if (savedHotelAncillaries && savedHotelAncillaries !== 'null') {
       try {
         const ancillaries = JSON.parse(savedHotelAncillaries);
+        console.log('Parsed hotel ancillaries:', ancillaries);
         if (typeof ancillaries === 'object' && ancillaries !== null) {
           summary.hotelAncillaries = Object.entries(ancillaries)
             .filter(([_, quantity]) => (quantity as number) > 0)
@@ -110,6 +120,7 @@ const SummaryPage = () => {
     if (savedFlight && savedFlight !== 'null') {
       try {
         const flightData = JSON.parse(savedFlight);
+        console.log('Parsed flight data:', flightData);
         const passengers = parseInt(bookingState.adults) + parseInt(bookingState.children) + parseInt(bookingState.infants);
         summary.flight = {
           airline: flightData.airline || flightData.name || "Selected Flight",
@@ -127,6 +138,7 @@ const SummaryPage = () => {
     if (savedFlightAncillaries && savedFlightAncillaries !== 'null') {
       try {
         const ancillaries = JSON.parse(savedFlightAncillaries);
+        console.log('Parsed flight ancillaries:', ancillaries);
         if (typeof ancillaries === 'object' && ancillaries !== null) {
           summary.flightAncillaries = Object.entries(ancillaries)
             .filter(([_, quantity]) => (quantity as number) > 0)
@@ -153,40 +165,12 @@ const SummaryPage = () => {
       }
     }
 
+    console.log('Final summary:', summary);
     setBookingSummary(summary);
-
-    // Calculate and update the total in booking context
-    const hotelTotal = summary.hotel?.total || 0;
-    const hotelAncillariesTotal = summary.hotelAncillaries.reduce((sum, item) => sum + item.total, 0);
-    const flightTotal = summary.flight?.total || 0;
-    const flightAncillariesTotal = summary.flightAncillaries.reduce((sum, item) => sum + item.total, 0);
-    
-    const calculatedTotal = hotelTotal + hotelAncillariesTotal + flightTotal + flightAncillariesTotal;
-    setTotal(calculatedTotal);
-  }, [bookingState, getNumberOfNights, setTotal]);
+  }, [bookingState, getNumberOfNights]);
 
   const handlePayment = () => {
     navigate('/confirmation');
-  };
-
-  const handleBackToPassengerDetails = () => {
-    navigate('/passenger-details');
-  };
-
-  const handleEditHotel = () => {
-    // Clear hotel ancillaries from localStorage and reset the flow
-    localStorage.removeItem('selectedHotelAncillaries');
-    // Set a flag to indicate we're editing hotel (skip passenger details on return)
-    localStorage.setItem('editingHotel', 'true');
-    navigate('/hotels');
-  };
-
-  const handleEditFlight = () => {
-    // Clear flight ancillaries from localStorage and reset the flow
-    localStorage.removeItem('selectedFlightAncillaries');
-    // Set a flag to indicate we're editing flight (skip passenger details on return)
-    localStorage.setItem('editingFlight', 'true');
-    navigate('/flights');
   };
 
   const calculateSubtotal = () => {
@@ -212,42 +196,19 @@ const SummaryPage = () => {
           {/* Booking Summary */}
           <div className="lg:col-span-2 space-y-6">
             <div className="mb-8">
-              <div className="flex items-center gap-4 mb-4">
-                <Button
-                  onClick={handleBackToPassengerDetails}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back
-                </Button>
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                    Booking Summary
-                  </h1>
-                  <p className="text-gray-600">
-                    Review your holiday details before payment
-                  </p>
-                </div>
-              </div>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                Booking Summary
+              </h1>
+              <p className="text-gray-600">
+                Review your holiday details before payment
+              </p>
             </div>
 
             {/* Hotel Summary */}
             {bookingSummary.hotel && (
               <Card>
                 <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-800">Hotel Accommodation</h3>
-                    <Button
-                      onClick={handleEditHotel}
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2"
-                    >
-                      <Edit className="w-4 h-4" />
-                      Edit Hotel
-                    </Button>
-                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Hotel Accommodation</h3>
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -287,18 +248,7 @@ const SummaryPage = () => {
             {bookingSummary.flight && (
               <Card>
                 <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-800">Flight Details</h3>
-                    <Button
-                      onClick={handleEditFlight}
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2"
-                    >
-                      <Edit className="w-4 h-4" />
-                      Edit Flight
-                    </Button>
-                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Flight Details</h3>
                   <Table>
                     <TableHeader>
                       <TableRow>
