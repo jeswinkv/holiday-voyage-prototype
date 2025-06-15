@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 interface LoaderOverlayProps {
   onComplete: () => void;
@@ -8,31 +8,37 @@ interface LoaderOverlayProps {
 const LoaderOverlay = ({ onComplete }: LoaderOverlayProps) => {
   const [progress, setProgress] = useState(0);
 
+  const handleComplete = useCallback(() => {
+    console.log('Calling onComplete callback');
+    onComplete();
+  }, [onComplete]);
+
   useEffect(() => {
     console.log('LoaderOverlay mounted, starting progress...');
     
     const interval = setInterval(() => {
       setProgress((prev) => {
-        const newProgress = prev + 2;
-        console.log('Progress:', newProgress);
+        const newProgress = prev + 4; // Increased increment for faster loading
+        console.log('Progress update:', prev, '->', newProgress);
         
         if (newProgress >= 100) {
-          console.log('Progress complete, calling onComplete...');
+          console.log('Progress complete, clearing interval and calling onComplete...');
           clearInterval(interval);
           setTimeout(() => {
-            onComplete();
-          }, 200);
+            handleComplete();
+          }, 300);
           return 100;
         }
         return newProgress;
       });
-    }, 50); // Reduced interval for faster loading
+    }, 60);
 
+    // Cleanup function
     return () => {
       console.log('LoaderOverlay unmounting, clearing interval');
       clearInterval(interval);
     };
-  }, [onComplete]);
+  }, [handleComplete]);
 
   return (
     <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
