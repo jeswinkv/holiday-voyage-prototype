@@ -1,4 +1,3 @@
-
 import Header from "@/components/Header";
 import BookingBand from "@/components/BookingBand";
 import { Card, CardContent } from "@/components/ui/card";
@@ -204,20 +203,6 @@ const SummaryPage = () => {
                 Review your holiday details before payment
               </p>
             </div>
-
-            {/* Debug info - remove this in production */}
-            <Card className="bg-yellow-50 border-yellow-200">
-              <CardContent className="p-4">
-                <h4 className="font-semibold text-yellow-800 mb-2">Debug Info:</h4>
-                <div className="text-sm space-y-1">
-                  <div>Hotel selected: {bookingSummary.hotel ? 'Yes' : 'No'}</div>
-                  <div>Hotel ancillaries: {bookingSummary.hotelAncillaries.length}</div>
-                  <div>Flight selected: {bookingSummary.flight ? 'Yes' : 'No'}</div>
-                  <div>Flight ancillaries: {bookingSummary.flightAncillaries.length}</div>
-                  <div>Subtotal: £{subtotal}</div>
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Hotel Summary */}
             {bookingSummary.hotel && (
