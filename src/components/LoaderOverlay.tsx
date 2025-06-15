@@ -9,18 +9,29 @@ const LoaderOverlay = ({ onComplete }: LoaderOverlayProps) => {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    console.log('LoaderOverlay mounted, starting progress...');
+    
     const interval = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 100) {
+        const newProgress = prev + 2;
+        console.log('Progress:', newProgress);
+        
+        if (newProgress >= 100) {
+          console.log('Progress complete, calling onComplete...');
           clearInterval(interval);
-          setTimeout(onComplete, 200);
+          setTimeout(() => {
+            onComplete();
+          }, 200);
           return 100;
         }
-        return prev + 2;
+        return newProgress;
       });
-    }, 100);
+    }, 50); // Reduced interval for faster loading
 
-    return () => clearInterval(interval);
+    return () => {
+      console.log('LoaderOverlay unmounting, clearing interval');
+      clearInterval(interval);
+    };
   }, [onComplete]);
 
   return (
