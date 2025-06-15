@@ -52,39 +52,59 @@ const HotelAncillariesPage = () => {
   const { addToTotal, subtractFromTotal, setTotal, getNumberOfNights, bookingState } = useBooking();
   const [quantities, setQuantities] = useState<{[key: number]: number}>({});
   const [showLoader, setShowLoader] = useState(true);
+  const [initError, setInitError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Recalculate total from localStorage when page loads
-    const savedHotel = localStorage.getItem('selectedHotel');
-    const savedFlight = localStorage.getItem('selectedFlight');
-    
-    let calculatedTotal = 0;
-    
-    // Add hotel cost
-    if (savedHotel && savedHotel !== 'null') {
-      try {
-        const hotelData = JSON.parse(savedHotel);
-        const nights = getNumberOfNights();
-        const hotelTotal = (hotelData.price || hotelData.pricePerNight || 0) * nights;
-        calculatedTotal += hotelTotal;
-      } catch (e) {
-        console.error('Error parsing hotel data:', e);
+    try {
+      console.log('HotelAncillariesPage: Starting initialization...');
+      console.log('BookingState:', bookingState);
+      
+      // Recalculate total from localStorage when page loads
+      const savedHotel = localStorage.getItem('selectedHotel');
+      const savedFlight = localStorage.getItem('selectedFlight');
+      
+      console.log('SavedHotel:', savedHotel);
+      console.log('SavedFlight:', savedFlight);
+      
+      let calculatedTotal = 0;
+      
+      // Add hotel cost
+      if (savedHotel && savedHotel !== 'null') {
+        try {
+          const hotelData = JSON.parse(savedHotel);
+          console.log('Parsed hotel data:', hotelData);
+          const nights = getNumberOfNights();
+          console.log('Number of nights:', nights);
+          const hotelTotal = (hotelData.price || hotelData.pricePerNight || 0) * nights;
+          calculatedTotal += hotelTotal;
+          console.log('Hotel total:', hotelTotal);
+        } catch (e) {
+          console.error('Error parsing hotel data:', e);
+        }
       }
-    }
-    
-    // Add flight cost
-    if (savedFlight && savedFlight !== 'null') {
-      try {
-        const flightData = JSON.parse(savedFlight);
-        const passengers = parseInt(bookingState.adults) + parseInt(bookingState.children) + parseInt(bookingState.infants);
-        const flightTotal = (flightData.price || flightData.pricePerPerson || 0) * passengers;
-        calculatedTotal += flightTotal;
-      } catch (e) {
-        console.error('Error parsing flight data:', e);
+      
+      // Add flight cost
+      if (savedFlight && savedFlight !== 'null') {
+        try {
+          const flightData = JSON.parse(savedFlight);
+          console.log('Parsed flight data:', flightData);
+          const passengers = parseInt(bookingState.adults) + parseInt(bookingState.children) + parseInt(bookingState.infants);
+          console.log('Number of passengers:', passengers);
+          const flightTotal = (flightData.price || flightData.pricePerPerson || 0) * passengers;
+          calculatedTotal += flightTotal;
+          console.log('Flight total:', flightTotal);
+        } catch (e) {
+          console.error('Error parsing flight data:', e);
+        }
       }
+      
+      console.log('Final calculated total:', calculatedTotal);
+      setTotal(calculatedTotal);
+      console.log('HotelAncillariesPage: Initialization complete');
+    } catch (error) {
+      console.error('Error in HotelAncillariesPage initialization:', error);
+      setInitError(error instanceof Error ? error.message : 'Initialization error');
     }
-    
-    setTotal(calculatedTotal);
   }, [setTotal, getNumberOfNights, bookingState]);
 
   const updateQuantity = (id: number, change: number) => {
@@ -139,8 +159,30 @@ const HotelAncillariesPage = () => {
   };
 
   const handleLoaderComplete = () => {
-    setShowLoader(false);
+    try {
+      console.log('Loader complete, hiding loader...');
+      setShowLoader(false);
+    } catch (error) {
+      console.error('Error in handleLoaderComplete:', error);
+      setShowLoader(false); // Hide loader anyway
+    }
   };
+
+  if (initError) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-600 mb-4">
+            <p className="text-lg font-semibold">Initialization Error</p>
+            <p className="text-sm">{initError}</p>
+          </div>
+          <Button onClick={() => setInitError(null)} className="bg-ocean-600 hover:bg-ocean-700">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (showLoader) {
     return <LoaderOverlay onComplete={handleLoaderComplete} />;
