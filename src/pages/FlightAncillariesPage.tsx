@@ -84,6 +84,18 @@ const FlightAncillariesPage = () => {
   };
 
   const handleContinue = () => {
+    // Save selected flight ancillaries to localStorage
+    const selectedAncillaries: {[key: string]: number} = {};
+    Object.entries(quantities).forEach(([id, quantity]) => {
+      if (quantity > 0) {
+        const ancillary = ancillaries.find(item => item.id === parseInt(id));
+        if (ancillary) {
+          selectedAncillaries[ancillary.name] = quantity;
+        }
+      }
+    });
+    localStorage.setItem('selectedFlightAncillaries', JSON.stringify(selectedAncillaries));
+    
     navigate('/passenger-details');
   };
 

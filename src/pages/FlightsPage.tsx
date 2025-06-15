@@ -114,10 +114,13 @@ const FlightsPage = () => {
   const [showLoader, setShowLoader] = useState(true);
   const [sortBy, setSortBy] = useState("recommended");
 
-  const handleSelectFlight = (flightPrice: number) => {
+  const handleSelectFlight = (flight: typeof flights[0]) => {
+    // Save selected flight to localStorage
+    localStorage.setItem('selectedFlight', JSON.stringify(flight));
+    
     // Calculate total for all passengers
     const totalPassengers = parseInt(bookingState.adults) + parseInt(bookingState.children) + parseInt(bookingState.infants);
-    const flightTotal = flightPrice * totalPassengers;
+    const flightTotal = flight.price * totalPassengers;
     addToTotal(flightTotal);
     navigate('/flight-ancillaries');
   };
@@ -243,7 +246,7 @@ const FlightsPage = () => {
                   {/* Select Button */}
                   <div className="text-center lg:text-right">
                     <Button
-                      onClick={() => handleSelectFlight(flight.price)}
+                      onClick={() => handleSelectFlight(flight)}
                       className="bg-ocean-600 hover:bg-ocean-700 text-white px-6 py-2 transition-all duration-300 transform hover:scale-105"
                     >
                       Select Flight
