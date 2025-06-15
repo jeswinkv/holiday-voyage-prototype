@@ -8,51 +8,174 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { CreditCard, Smartphone, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useBooking } from "@/contexts/BookingContext";
+import { useEffect, useState } from "react";
+
+interface SelectedItem {
+  name: string;
+  quantity: number;
+  price: number;
+  total: number;
+  details?: string;
+}
+
+interface BookingSummaryData {
+  hotel: {
+    name: string;
+    nights: number;
+    pricePerNight: number;
+    total: number;
+  } | null;
+  hotelAncillaries: SelectedItem[];
+  flight: {
+    airline: string;
+    route: string;
+    passengers: number;
+    pricePerPerson: number;
+    total: number;
+  } | null;
+  flightAncillaries: SelectedItem[];
+}
 
 const SummaryPage = () => {
   const navigate = useNavigate();
   const { bookingState, getNumberOfNights } = useBooking();
+  const [bookingSummary, setBookingSummary] = useState<BookingSummaryData>({
+    hotel: null,
+    hotelAncillaries: [],
+    flight: null,
+    flightAncillaries: []
+  });
+
+  useEffect(() => {
+    // Load booking summary from localStorage or context
+    const savedHotel = localStorage.getItem('selectedHotel');
+    const savedHotelAncillaries = localStorage.getItem('selectedHotelAncillaries');
+    const savedFlight = localStorage.getItem('selectedFlight');
+    const savedFlightAncillaries = localStorage.getItem('selectedFlightAncillaries');
+
+    const summary: BookingSummaryData = {
+      hotel: null,
+      hotelAncillaries: [],
+      flight: null,
+      flightAncillaries: []
+    };
+
+    // Parse hotel data
+    if (savedHotel) {
+      try {
+        const hotelData = JSON.parse(savedHotel);
+        const nights = getNumberOfNights();
+        summary.hotel = {
+          name: hotelData.name || "Selected Hotel",
+          nights: nights,
+          pricePerNight: hotelData.price || 0,
+          total: (hotelData.price || 0) * nights
+        };
+      } catch (e) {
+        console.log('Error parsing hotel data:', e);
+      }
+    }
+
+    // Parse hotel ancillaries
+    if (savedHotelAncillaries) {
+      try {
+        const ancillaries = JSON.parse(savedHotelAncillaries);
+        summary.hotelAncillaries = Object.entries(ancillaries)
+          .filter(([_, quantity]) => (quantity as number) > 0)
+          .map(([name, quantity]) => {
+            // Map ancillary names to prices (these should match the ancillaries from HotelAncillariesPage)
+            const priceMap: { [key: string]: number } = {
+              'Couples Spa Package': 180,
+              'Sunset Dolphin Cruise': 85,
+              'Island Hopping Adventure': 120,
+              'Private Beach Dinner': 250,
+              'Scuba Diving Experience': 95
+            };
+            const price = priceMap[name] || 0;
+            return {
+              name,
+              quantity: quantity as number,
+              price,
+              total: price * (quantity as number)
+            };
+          });
+      } catch (e) {
+        console.log('Error parsing hotel ancillaries:', e);
+      }
+    }
+
+    // Parse flight data
+    if (savedFlight) {
+      try {
+        const flightData = JSON.parse(savedFlight);
+        const passengers = parseInt(bookingState.adults) + parseInt(bookingState.children) + parseInt(bookingState.infants);
+        summary.flight = {
+          airline: flightData.airline || "Selected Airline",
+          route: `${bookingState.origin || 'Origin'} to ${bookingState.destination || 'Destination'}`,
+          passengers: passengers,
+          pricePerPerson: flightData.price || 0,
+          total: (flightData.price || 0) * passengers
+        };
+      } catch (e) {
+        console.log('Error parsing flight data:', e);
+      }
+    }
+
+    // Parse flight ancillaries
+    if (savedFlightAncillaries) {
+      try {
+        const ancillaries = JSON.parse(savedFlightAncillaries);
+        summary.flightAncillaries = Object.entries(ancillaries)
+          .filter(([_, quantity]) => (quantity as number) > 0)
+          .map(([name, quantity]) => {
+            // Map ancillary names to prices (these should match the ancillaries from FlightAncillariesPage)
+            const priceMap: { [key: string]: number } = {
+              'Premium Meal Selection': 35,
+              'In-Flight WiFi': 15,
+              'Extra Legroom Seat': 85,
+              'Premium Beverage Package': 45,
+              'Priority Boarding': 25
+            };
+            const price = priceMap[name] || 0;
+            return {
+              name,
+              quantity: quantity as number,
+              price,
+              total: price * (quantity as number)
+            };
+          });
+      } catch (e) {
+        console.log('Error parsing flight ancillaries:', e);
+      }
+    }
+
+    setBookingSummary(summary);
+  }, [bookingState, getNumberOfNights]);
 
   const handlePayment = () => {
     navigate('/confirmation');
   };
 
-  // Sample data - in a real app, this would come from the booking context
-  // For now, using placeholder data that matches typical selections
-  const selectedItems = {
-    hotel: {
-      name: "Ocean View Resort & Spa",
-      nights: getNumberOfNights(),
-      pricePerNight: 450,
-      total: 450 * getNumberOfNights()
-    },
-    hotelAncillaries: [
-      { name: "Couples Spa Package", quantity: 1, price: 180, total: 180 },
-      { name: "Sunset Dolphin Cruise", quantity: 2, price: 85, total: 170 }
-    ],
-    flight: {
-      airline: "IBS Airways",
-      route: `${bookingState.origin || 'London'} to ${bookingState.destination || 'Maldives'}`,
-      passengers: parseInt(bookingState.adults) + parseInt(bookingState.children) + parseInt(bookingState.infants),
-      pricePerPerson: 780,
-      total: 780 * (parseInt(bookingState.adults) + parseInt(bookingState.children) + parseInt(bookingState.infants))
-    },
-    flightAncillaries: [
-      { name: "Extra Legroom Seat", quantity: 2, price: 85, total: 170 },
-      { name: "Premium Meal Selection", quantity: 3, price: 35, total: 105 }
-    ]
-  };
-
   const calculateSubtotal = () => {
-    return selectedItems.hotel.total + 
-           selectedItems.hotelAncillaries.reduce((sum, item) => sum + item.total, 0) +
-           selectedItems.flight.total +
-           selectedItems.flightAncillaries.reduce((sum, item) => sum + item.total, 0);
+    const hotelTotal = bookingSummary.hotel?.total || 0;
+    const hotelAncillariesTotal = bookingSummary.hotelAncillaries.reduce((sum, item) => sum + item.total, 0);
+    const flightTotal = bookingSummary.flight?.total || 0;
+    const flightAncillariesTotal = bookingSummary.flightAncillaries.reduce((sum, item) => sum + item.total, 0);
+    
+    return hotelTotal + hotelAncillariesTotal + flightTotal + flightAncillariesTotal;
   };
 
   const subtotal = calculateSubtotal();
-  const taxesAndFees = 185;
+  const taxesAndFees = Math.round(subtotal * 0.15); // 15% taxes and fees
   const finalTotal = subtotal + taxesAndFees;
+
+  // Update booking context total
+  useEffect(() => {
+    // Only update if there's a difference to avoid infinite loops
+    if (bookingState.totalAmount !== finalTotal) {
+      // We'll update this through the context but for now just display the calculated total
+    }
+  }, [finalTotal, bookingState.totalAmount]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -73,81 +196,94 @@ const SummaryPage = () => {
             </div>
 
             {/* Hotel Summary */}
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Hotel Accommodation</h3>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Item</TableHead>
-                      <TableHead>Details</TableHead>
-                      <TableHead className="text-right">Total</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell className="font-medium">{selectedItems.hotel.name}</TableCell>
-                      <TableCell>
-                        {selectedItems.hotel.nights} night{selectedItems.hotel.nights > 1 ? 's' : ''} × £{selectedItems.hotel.pricePerNight}
-                      </TableCell>
-                      <TableCell className="text-right font-semibold">
-                        £{selectedItems.hotel.total.toLocaleString()}
-                      </TableCell>
-                    </TableRow>
-                    {selectedItems.hotelAncillaries.map((item, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">{item.name}</TableCell>
+            {bookingSummary.hotel && (
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Hotel Accommodation</h3>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Item</TableHead>
+                        <TableHead>Details</TableHead>
+                        <TableHead className="text-right">Total</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="font-medium">{bookingSummary.hotel.name}</TableCell>
                         <TableCell>
-                          {item.quantity} × £{item.price}
+                          {bookingSummary.hotel.nights} night{bookingSummary.hotel.nights > 1 ? 's' : ''} × £{bookingSummary.hotel.pricePerNight}
                         </TableCell>
                         <TableCell className="text-right font-semibold">
-                          £{item.total}
+                          £{bookingSummary.hotel.total.toLocaleString()}
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                      {bookingSummary.hotelAncillaries.map((item, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium">{item.name}</TableCell>
+                          <TableCell>
+                            {item.quantity} × £{item.price}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold">
+                            £{item.total}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Flight Summary */}
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Flight Details</h3>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Item</TableHead>
-                      <TableHead>Details</TableHead>
-                      <TableHead className="text-right">Total</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell className="font-medium">{selectedItems.flight.airline}</TableCell>
-                      <TableCell>
-                        {selectedItems.flight.route}<br />
-                        {selectedItems.flight.passengers} passenger{selectedItems.flight.passengers > 1 ? 's' : ''} × £{selectedItems.flight.pricePerPerson}
-                      </TableCell>
-                      <TableCell className="text-right font-semibold">
-                        £{selectedItems.flight.total.toLocaleString()}
-                      </TableCell>
-                    </TableRow>
-                    {selectedItems.flightAncillaries.map((item, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">{item.name}</TableCell>
+            {bookingSummary.flight && (
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Flight Details</h3>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Item</TableHead>
+                        <TableHead>Details</TableHead>
+                        <TableHead className="text-right">Total</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="font-medium">{bookingSummary.flight.airline}</TableCell>
                         <TableCell>
-                          {item.quantity} × £{item.price}
+                          {bookingSummary.flight.route}<br />
+                          {bookingSummary.flight.passengers} passenger{bookingSummary.flight.passengers > 1 ? 's' : ''} × £{bookingSummary.flight.pricePerPerson}
                         </TableCell>
                         <TableCell className="text-right font-semibold">
-                          £{item.total}
+                          £{bookingSummary.flight.total.toLocaleString()}
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                      {bookingSummary.flightAncillaries.map((item, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium">{item.name}</TableCell>
+                          <TableCell>
+                            {item.quantity} × £{item.price}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold">
+                            £{item.total}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* No selections message */}
+            {!bookingSummary.hotel && !bookingSummary.flight && (
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <p className="text-gray-600">No items selected yet. Please go back and make your selections.</p>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Payment Section */}
@@ -209,8 +345,9 @@ const SummaryPage = () => {
                 <Button
                   onClick={handlePayment}
                   className="w-full bg-ocean-600 hover:bg-ocean-700 text-white py-3 transition-all duration-300 transform hover:scale-105"
+                  disabled={subtotal === 0}
                 >
-                  Pay Now
+                  {subtotal === 0 ? 'No Items Selected' : 'Pay Now'}
                 </Button>
 
                 <p className="text-xs text-gray-600 text-center mt-4">
