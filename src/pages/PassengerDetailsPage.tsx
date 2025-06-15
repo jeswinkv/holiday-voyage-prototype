@@ -1,4 +1,3 @@
-
 import Header from "@/components/Header";
 import BookingBand from "@/components/BookingBand";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,7 +30,7 @@ const PassengerDetailsPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <BookingBand totalAmount="£3,280" />
+      <BookingBand />
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
