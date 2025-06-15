@@ -85,13 +85,14 @@ const hotels = [
 
 const HotelsPage = () => {
   const navigate = useNavigate();
-  const { setTotal } = useBooking();
+  const { setTotal, getNumberOfNights } = useBooking();
   const [showLoader, setShowLoader] = useState(true);
   const [sortBy, setSortBy] = useState("recommended");
 
   const handleSelectHotel = (hotelPrice: number) => {
-    // Calculate total for 7 nights
-    const hotelTotal = hotelPrice * 7;
+    // Calculate total for the selected number of nights
+    const numberOfNights = getNumberOfNights();
+    const hotelTotal = hotelPrice * numberOfNights;
     setTotal(hotelTotal);
     navigate('/hotel-ancillaries');
   };
@@ -119,6 +120,7 @@ const HotelsPage = () => {
   }
 
   const sortedHotels = getSortedHotels();
+  const numberOfNights = getNumberOfNights();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -133,7 +135,7 @@ const HotelsPage = () => {
                 Choose Your Perfect Maldivian Paradise
               </h1>
               <p className="text-gray-600">
-                {hotels.length} luxury resorts found in the Maldives
+                {hotels.length} luxury resorts found in the Maldives • {numberOfNights} night{numberOfNights > 1 ? 's' : ''}
               </p>
             </div>
             
@@ -223,6 +225,9 @@ const HotelsPage = () => {
                           <div className="text-sm text-gray-600">per night from</div>
                           <div className="text-2xl font-bold text-ocean-700">
                             £{hotel.price}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Total: £{hotel.price * numberOfNights} for {numberOfNights} night{numberOfNights > 1 ? 's' : ''}
                           </div>
                         </div>
                         <Button

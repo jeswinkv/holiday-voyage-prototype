@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { DateRange } from 'react-day-picker';
+import { differenceInDays } from 'date-fns';
 
 interface BookingState {
   origin: string;
@@ -18,6 +19,7 @@ interface BookingContextType {
   addToTotal: (amount: number) => void;
   subtractFromTotal: (amount: number) => void;
   setTotal: (amount: number) => void;
+  getNumberOfNights: () => number;
 }
 
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
@@ -61,13 +63,22 @@ export const BookingProvider = ({ children }: BookingProviderProps) => {
     setBookingState(prev => ({ ...prev, totalAmount: amount }));
   };
 
+  const getNumberOfNights = () => {
+    if (bookingState.dateRange?.from && bookingState.dateRange?.to) {
+      const nights = differenceInDays(bookingState.dateRange.to, bookingState.dateRange.from);
+      return nights > 0 ? nights : 1; // Minimum 1 night
+    }
+    return 7; // Default to 7 nights if no dates selected
+  };
+
   return (
     <BookingContext.Provider value={{ 
       bookingState, 
       updateBookingState, 
       addToTotal, 
       subtractFromTotal, 
-      setTotal 
+      setTotal,
+      getNumberOfNights
     }}>
       {children}
     </BookingContext.Provider>
