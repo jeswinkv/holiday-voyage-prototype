@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Calendar, MapPin, Users, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -57,6 +56,7 @@ const BookingForm = () => {
   const { bookingState, updateBookingState } = useBooking();
   const [originSuggestions, setOriginSuggestions] = useState<typeof majorCitiesWithCodes>([]);
   const [destinationSuggestions, setDestinationSuggestions] = useState<typeof majorDestinationsWithCodes>([]);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   const handleOriginChange = (value: string) => {
     updateBookingState({ origin: value });
@@ -173,7 +173,7 @@ const BookingForm = () => {
             {/* Date Range Picker - spans 2 columns */}
             <div className="space-y-2 lg:col-span-2">
               <label className="text-sm font-medium text-gray-700">Travel Dates</label>
-              <Popover>
+              <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -200,6 +200,15 @@ const BookingForm = () => {
                     initialFocus
                     className="pointer-events-auto"
                   />
+                  <div className="p-3 border-t">
+                    <Button 
+                      onClick={() => setDatePickerOpen(false)}
+                      className="w-full bg-ocean-600 hover:bg-ocean-700"
+                      disabled={!bookingState.dateRange?.from || !bookingState.dateRange?.to}
+                    >
+                      Done
+                    </Button>
+                  </div>
                 </PopoverContent>
               </Popover>
             </div>
