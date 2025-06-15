@@ -1,3 +1,4 @@
+
 import Header from "@/components/Header";
 import BookingBand from "@/components/BookingBand";
 import { Card, CardContent } from "@/components/ui/card";
@@ -37,7 +38,7 @@ interface BookingSummaryData {
 
 const SummaryPage = () => {
   const navigate = useNavigate();
-  const { bookingState, getNumberOfNights } = useBooking();
+  const { bookingState, getNumberOfNights, setTotal } = useBooking();
   const [bookingSummary, setBookingSummary] = useState<BookingSummaryData>({
     hotel: null,
     hotelAncillaries: [],
@@ -46,20 +47,11 @@ const SummaryPage = () => {
   });
 
   useEffect(() => {
-    console.log('Loading booking summary data...');
-    console.log('LocalStorage keys:', Object.keys(localStorage));
-    
     // Load booking summary from localStorage
     const savedHotel = localStorage.getItem('selectedHotel');
     const savedHotelAncillaries = localStorage.getItem('selectedHotelAncillaries');
     const savedFlight = localStorage.getItem('selectedFlight');
     const savedFlightAncillaries = localStorage.getItem('selectedFlightAncillaries');
-
-    console.log('Raw data from localStorage:');
-    console.log('Hotel:', savedHotel);
-    console.log('Hotel ancillaries:', savedHotelAncillaries);
-    console.log('Flight:', savedFlight);
-    console.log('Flight ancillaries:', savedFlightAncillaries);
 
     const summary: BookingSummaryData = {
       hotel: null,
@@ -72,7 +64,6 @@ const SummaryPage = () => {
     if (savedHotel && savedHotel !== 'null') {
       try {
         const hotelData = JSON.parse(savedHotel);
-        console.log('Parsed hotel data:', hotelData);
         const nights = getNumberOfNights();
         summary.hotel = {
           name: hotelData.name || "Selected Hotel",
@@ -89,7 +80,6 @@ const SummaryPage = () => {
     if (savedHotelAncillaries && savedHotelAncillaries !== 'null') {
       try {
         const ancillaries = JSON.parse(savedHotelAncillaries);
-        console.log('Parsed hotel ancillaries:', ancillaries);
         if (typeof ancillaries === 'object' && ancillaries !== null) {
           summary.hotelAncillaries = Object.entries(ancillaries)
             .filter(([_, quantity]) => (quantity as number) > 0)
@@ -120,7 +110,6 @@ const SummaryPage = () => {
     if (savedFlight && savedFlight !== 'null') {
       try {
         const flightData = JSON.parse(savedFlight);
-        console.log('Parsed flight data:', flightData);
         const passengers = parseInt(bookingState.adults) + parseInt(bookingState.children) + parseInt(bookingState.infants);
         summary.flight = {
           airline: flightData.airline || flightData.name || "Selected Flight",
@@ -138,7 +127,6 @@ const SummaryPage = () => {
     if (savedFlightAncillaries && savedFlightAncillaries !== 'null') {
       try {
         const ancillaries = JSON.parse(savedFlightAncillaries);
-        console.log('Parsed flight ancillaries:', ancillaries);
         if (typeof ancillaries === 'object' && ancillaries !== null) {
           summary.flightAncillaries = Object.entries(ancillaries)
             .filter(([_, quantity]) => (quantity as number) > 0)
@@ -165,9 +153,17 @@ const SummaryPage = () => {
       }
     }
 
-    console.log('Final summary:', summary);
     setBookingSummary(summary);
-  }, [bookingState, getNumberOfNights]);
+
+    // Calculate and update the total in booking context
+    const hotelTotal = summary.hotel?.total || 0;
+    const hotelAncillariesTotal = summary.hotelAncillaries.reduce((sum, item) => sum + item.total, 0);
+    const flightTotal = summary.flight?.total || 0;
+    const flightAncillariesTotal = summary.flightAncillaries.reduce((sum, item) => sum + item.total, 0);
+    
+    const calculatedTotal = hotelTotal + hotelAncillariesTotal + flightTotal + flightAncillariesTotal;
+    setTotal(calculatedTotal);
+  }, [bookingState, getNumberOfNights, setTotal]);
 
   const handlePayment = () => {
     navigate('/confirmation');
