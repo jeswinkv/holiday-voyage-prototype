@@ -1,3 +1,4 @@
+
 import Header from "@/components/Header";
 import BookingBand from "@/components/BookingBand";
 import LoaderOverlay from "@/components/LoaderOverlay";
@@ -141,6 +142,13 @@ const FlightsPage = () => {
     }
   };
 
+  // Calculate total passengers for fare display
+  const getTotalPassengers = () => {
+    return parseInt(bookingState.adults) + parseInt(bookingState.children) + parseInt(bookingState.infants);
+  };
+
+  const totalPassengers = getTotalPassengers();
+
   if (showLoader) {
     return <LoaderOverlay onComplete={handleLoaderComplete} />;
   }
@@ -224,6 +232,12 @@ const FlightsPage = () => {
                   <div className="text-center lg:text-right">
                     <div className="text-sm text-gray-600">per person from</div>
                     <div className="text-2xl font-bold text-ocean-700">£{flight.price}</div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      Total for {totalPassengers} passenger{totalPassengers > 1 ? 's' : ''}
+                    </div>
+                    <div className="text-lg font-semibold text-gray-800">
+                      £{(flight.price * totalPassengers).toLocaleString()}
+                    </div>
                   </div>
 
                   {/* Select Button */}
