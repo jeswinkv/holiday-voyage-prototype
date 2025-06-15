@@ -4,12 +4,10 @@ import { useBooking } from "@/contexts/BookingContext";
 import { format } from "date-fns";
 
 interface BookingBandProps {
-  totalAmount?: string;
   showTotal?: boolean;
 }
 
 const BookingBand = ({
-  totalAmount = "£2,450",
   showTotal = true
 }: BookingBandProps) => {
   const { bookingState } = useBooking();
@@ -76,7 +74,9 @@ const BookingBand = ({
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <div className="text-sm text-gray-600">Total</div>
-                <div className="text-xl font-bold text-ocean-700">{totalAmount}</div>
+                <div className="text-xl font-bold text-ocean-700">
+                  £{bookingState.totalAmount.toLocaleString()}
+                </div>
               </div>
             </div>
           )}

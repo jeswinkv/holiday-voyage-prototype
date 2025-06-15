@@ -1,4 +1,3 @@
-
 import Header from "@/components/Header";
 import BookingBand from "@/components/BookingBand";
 import LoaderOverlay from "@/components/LoaderOverlay";
@@ -9,6 +8,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Star, MapPin, Wifi, Car, Coffee, Waves } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useBooking } from "@/contexts/BookingContext";
 
 const hotels = [
   {
@@ -85,10 +85,14 @@ const hotels = [
 
 const HotelsPage = () => {
   const navigate = useNavigate();
+  const { setTotal } = useBooking();
   const [showLoader, setShowLoader] = useState(true);
   const [sortBy, setSortBy] = useState("recommended");
 
-  const handleSelectHotel = () => {
+  const handleSelectHotel = (hotelPrice: number) => {
+    // Calculate total for 7 nights
+    const hotelTotal = hotelPrice * 7;
+    setTotal(hotelTotal);
     navigate('/hotel-ancillaries');
   };
 
@@ -222,7 +226,7 @@ const HotelsPage = () => {
                           </div>
                         </div>
                         <Button
-                          onClick={handleSelectHotel}
+                          onClick={() => handleSelectHotel(hotel.price)}
                           className="bg-ocean-600 hover:bg-ocean-700 text-white px-6 py-2 transition-all duration-300 transform hover:scale-105"
                         >
                           Select Resort

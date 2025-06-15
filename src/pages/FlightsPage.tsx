@@ -1,4 +1,3 @@
-
 import Header from "@/components/Header";
 import BookingBand from "@/components/BookingBand";
 import LoaderOverlay from "@/components/LoaderOverlay";
@@ -8,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plane, Clock, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useBooking } from "@/contexts/BookingContext";
 
 const flights = [
   {
@@ -109,10 +109,15 @@ const flights = [
 
 const FlightsPage = () => {
   const navigate = useNavigate();
+  const { addToTotal, bookingState } = useBooking();
   const [showLoader, setShowLoader] = useState(true);
   const [sortBy, setSortBy] = useState("recommended");
 
-  const handleSelectFlight = () => {
+  const handleSelectFlight = (flightPrice: number) => {
+    // Calculate total for all passengers
+    const totalPassengers = parseInt(bookingState.adults) + parseInt(bookingState.children) + parseInt(bookingState.infants);
+    const flightTotal = flightPrice * totalPassengers;
+    addToTotal(flightTotal);
     navigate('/flight-ancillaries');
   };
 
@@ -145,7 +150,7 @@ const FlightsPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <BookingBand totalAmount="£3,200" />
+      <BookingBand />
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
@@ -224,7 +229,7 @@ const FlightsPage = () => {
                   {/* Select Button */}
                   <div className="text-center lg:text-right">
                     <Button
-                      onClick={handleSelectFlight}
+                      onClick={() => handleSelectFlight(flight.price)}
                       className="bg-ocean-600 hover:bg-ocean-700 text-white px-6 py-2 transition-all duration-300 transform hover:scale-105"
                     >
                       Select Flight

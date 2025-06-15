@@ -1,12 +1,12 @@
-
 import Header from "@/components/Header";
 import BookingBand from "@/components/BookingBand";
 import LoaderOverlay from "@/components/LoaderOverlay";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Minus } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useBooking } from "@/contexts/BookingContext";
 
 const ancillaries = [
   {
@@ -48,14 +48,29 @@ const ancillaries = [
 
 const HotelAncillariesPage = () => {
   const navigate = useNavigate();
+  const { addToTotal, subtractFromTotal } = useBooking();
   const [quantities, setQuantities] = useState<{[key: number]: number}>({});
   const [showLoader, setShowLoader] = useState(true);
+  const [previousQuantities, setPreviousQuantities] = useState<{[key: number]: number}>({});
 
   const updateQuantity = (id: number, change: number) => {
+    const currentQty = quantities[id] || 0;
+    const newQty = Math.max(0, currentQty + change);
+    
     setQuantities(prev => ({
       ...prev,
-      [id]: Math.max(0, (prev[id] || 0) + change)
+      [id]: newQty
     }));
+
+    // Update total amount
+    const ancillary = ancillaries.find(item => item.id === id);
+    if (ancillary) {
+      if (change > 0) {
+        addToTotal(ancillary.price);
+      } else if (change < 0 && currentQty > 0) {
+        subtractFromTotal(ancillary.price);
+      }
+    }
   };
 
   const getTotalCost = () => {
@@ -79,7 +94,7 @@ const HotelAncillariesPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <BookingBand totalAmount={`£${2450 + getTotalCost()}`} />
+      <BookingBand />
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">

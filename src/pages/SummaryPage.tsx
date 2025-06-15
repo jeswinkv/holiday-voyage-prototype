@@ -1,4 +1,3 @@
-
 import Header from "@/components/Header";
 import BookingBand from "@/components/BookingBand";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { CreditCard, Smartphone, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useBooking } from "@/contexts/BookingContext";
 
 const SummaryPage = () => {
   const navigate = useNavigate();
+  const { bookingState } = useBooking();
 
   const handlePayment = () => {
     navigate('/confirmation');
@@ -39,18 +40,13 @@ const SummaryPage = () => {
   };
 
   const calculateTotal = () => {
-    const hotelTotal = bookingSummary.hotel.total;
-    const hotelAncillariesTotal = bookingSummary.hotelAncillaries.reduce((sum, item) => sum + item.price, 0);
-    const flightTotal = bookingSummary.flight.total;
-    const flightAncillariesTotal = bookingSummary.flightAncillaries.reduce((sum, item) => sum + item.price, 0);
-    
-    return hotelTotal + hotelAncillariesTotal + flightTotal + flightAncillariesTotal;
+    return bookingState.totalAmount;
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <BookingBand totalAmount={`£${calculateTotal()}`} />
+      <BookingBand />
       
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -71,26 +67,10 @@ const SummaryPage = () => {
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Hotel Accommodation</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span>{bookingSummary.hotel.name}</span>
-                    <span className="font-medium">£{bookingSummary.hotel.total}</span>
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {bookingSummary.hotel.nights} nights × £{bookingSummary.hotel.pricePerNight} per night
+                    <span>Selected Resort & Extras</span>
+                    <span className="font-medium">Included in total</span>
                   </div>
                 </div>
-                
-                {bookingSummary.hotelAncillaries.length > 0 && (
-                  <>
-                    <Separator className="my-4" />
-                    <h4 className="font-medium text-gray-700 mb-2">Hotel Extras</h4>
-                    {bookingSummary.hotelAncillaries.map((item, index) => (
-                      <div key={index} className="flex justify-between text-sm">
-                        <span>{item.name} × {item.quantity}</span>
-                        <span>£{item.price}</span>
-                      </div>
-                    ))}
-                  </>
-                )}
               </CardContent>
             </Card>
 
@@ -100,26 +80,10 @@ const SummaryPage = () => {
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Flight Details</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span>{bookingSummary.flight.airline} - {bookingSummary.flight.route}</span>
-                    <span className="font-medium">£{bookingSummary.flight.total}</span>
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {bookingSummary.flight.passengers} passengers × £{bookingSummary.flight.pricePerPerson} per person
+                    <span>Selected Flight & Extras</span>
+                    <span className="font-medium">Included in total</span>
                   </div>
                 </div>
-                
-                {bookingSummary.flightAncillaries.length > 0 && (
-                  <>
-                    <Separator className="my-4" />
-                    <h4 className="font-medium text-gray-700 mb-2">Flight Extras</h4>
-                    {bookingSummary.flightAncillaries.map((item, index) => (
-                      <div key={index} className="flex justify-between text-sm">
-                        <span>{item.name} × {item.quantity}</span>
-                        <span>£{item.price}</span>
-                      </div>
-                    ))}
-                  </>
-                )}
               </CardContent>
             </Card>
           </div>
@@ -166,12 +130,8 @@ const SummaryPage = () => {
                 
                 <div className="space-y-2 mb-6">
                   <div className="flex justify-between text-sm">
-                    <span>Hotel & Extras</span>
-                    <span>£{bookingSummary.hotel.total + bookingSummary.hotelAncillaries.reduce((sum, item) => sum + item.price, 0)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Flights & Extras</span>
-                    <span>£{bookingSummary.flight.total + bookingSummary.flightAncillaries.reduce((sum, item) => sum + item.price, 0)}</span>
+                    <span>Subtotal</span>
+                    <span>£{calculateTotal()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Taxes & Fees</span>
