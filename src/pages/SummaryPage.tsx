@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CreditCard, Smartphone, Building2 } from "lucide-react";
+import { CreditCard, Smartphone, Building2, ArrowLeft, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useBooking } from "@/contexts/BookingContext";
 import { useEffect, useState } from "react";
@@ -173,6 +173,26 @@ const SummaryPage = () => {
     navigate('/confirmation');
   };
 
+  const handleBackToPassengerDetails = () => {
+    navigate('/passenger-details');
+  };
+
+  const handleEditHotel = () => {
+    // Clear hotel ancillaries from localStorage and reset the flow
+    localStorage.removeItem('selectedHotelAncillaries');
+    // Set a flag to indicate we're editing hotel (skip passenger details on return)
+    localStorage.setItem('editingHotel', 'true');
+    navigate('/hotels');
+  };
+
+  const handleEditFlight = () => {
+    // Clear flight ancillaries from localStorage and reset the flow
+    localStorage.removeItem('selectedFlightAncillaries');
+    // Set a flag to indicate we're editing flight (skip passenger details on return)
+    localStorage.setItem('editingFlight', 'true');
+    navigate('/flights');
+  };
+
   const calculateSubtotal = () => {
     const hotelTotal = bookingSummary.hotel?.total || 0;
     const hotelAncillariesTotal = bookingSummary.hotelAncillaries.reduce((sum, item) => sum + item.total, 0);
@@ -196,19 +216,42 @@ const SummaryPage = () => {
           {/* Booking Summary */}
           <div className="lg:col-span-2 space-y-6">
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                Booking Summary
-              </h1>
-              <p className="text-gray-600">
-                Review your holiday details before payment
-              </p>
+              <div className="flex items-center gap-4 mb-4">
+                <Button
+                  onClick={handleBackToPassengerDetails}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back
+                </Button>
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                    Booking Summary
+                  </h1>
+                  <p className="text-gray-600">
+                    Review your holiday details before payment
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Hotel Summary */}
             {bookingSummary.hotel && (
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Hotel Accommodation</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-800">Hotel Accommodation</h3>
+                    <Button
+                      onClick={handleEditHotel}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <Edit className="w-4 h-4" />
+                      Edit Hotel
+                    </Button>
+                  </div>
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -248,7 +291,18 @@ const SummaryPage = () => {
             {bookingSummary.flight && (
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Flight Details</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-800">Flight Details</h3>
+                    <Button
+                      onClick={handleEditFlight}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <Edit className="w-4 h-4" />
+                      Edit Flight
+                    </Button>
+                  </div>
                   <Table>
                     <TableHeader>
                       <TableRow>

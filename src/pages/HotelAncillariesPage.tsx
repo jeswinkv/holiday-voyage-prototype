@@ -92,7 +92,16 @@ const HotelAncillariesPage = () => {
     });
     localStorage.setItem('selectedHotelAncillaries', JSON.stringify(selectedAncillaries));
     
-    navigate('/flights');
+    // Check if we're in editing mode
+    const isEditingHotel = localStorage.getItem('editingHotel');
+    if (isEditingHotel) {
+      // Clear the editing flag and go back to summary
+      localStorage.removeItem('editingHotel');
+      navigate('/summary');
+    } else {
+      // Normal flow - continue to flights
+      navigate('/flights');
+    }
   };
 
   const handleLoaderComplete = () => {

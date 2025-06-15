@@ -96,7 +96,16 @@ const FlightAncillariesPage = () => {
     });
     localStorage.setItem('selectedFlightAncillaries', JSON.stringify(selectedAncillaries));
     
-    navigate('/passenger-details');
+    // Check if we're in editing mode
+    const isEditingFlight = localStorage.getItem('editingFlight');
+    if (isEditingFlight) {
+      // Clear the editing flag and go back to summary
+      localStorage.removeItem('editingFlight');
+      navigate('/summary');
+    } else {
+      // Normal flow - continue to passenger details
+      navigate('/passenger-details');
+    }
   };
 
   const handleLoaderComplete = () => {
