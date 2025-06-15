@@ -1,10 +1,11 @@
+
 import Header from "@/components/Header";
 import BookingBand from "@/components/BookingBand";
 import LoaderOverlay from "@/components/LoaderOverlay";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Minus } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useBooking } from "@/contexts/BookingContext";
 
@@ -53,9 +54,66 @@ const ancillaries = [
 
 const FlightAncillariesPage = () => {
   const navigate = useNavigate();
-  const { addToTotal, subtractFromTotal } = useBooking();
+  const { addToTotal, subtractFromTotal, setTotal, getNumberOfNights, bookingState } = useBooking();
   const [quantities, setQuantities] = useState<{[key: number]: number}>({});
   const [showLoader, setShowLoader] = useState(true);
+
+  useEffect(() => {
+    // Recalculate total from localStorage when page loads
+    const savedHotel = localStorage.getItem('selectedHotel');
+    const savedHotelAncillaries = localStorage.getItem('selectedHotelAncillaries');
+    const savedFlight = localStorage.getItem('selectedFlight');
+    
+    let calculatedTotal = 0;
+    
+    // Add hotel cost
+    if (savedHotel && savedHotel !== 'null') {
+      try {
+        const hotelData = JSON.parse(savedHotel);
+        const nights = getNumberOfNights();
+        const hotelTotal = (hotelData.price || hotelData.pricePerNight || 0) * nights;
+        calculatedTotal += hotelTotal;
+      } catch (e) {
+        console.error('Error parsing hotel data:', e);
+      }
+    }
+    
+    // Add hotel ancillaries cost
+    if (savedHotelAncillaries && savedHotelAncillaries !== 'null') {
+      try {
+        const ancillaries = JSON.parse(savedHotelAncillaries);
+        if (typeof ancillaries === 'object' && ancillaries !== null) {
+          const priceMap: { [key: string]: number } = {
+            'Couples Spa Package': 180,
+            'Sunset Dolphin Cruise': 85,
+            'Island Hopping Adventure': 120,
+            'Private Beach Dinner': 250,
+            'Scuba Diving Experience': 95
+          };
+          Object.entries(ancillaries).forEach(([name, quantity]) => {
+            const price = priceMap[name] || 0;
+            calculatedTotal += price * (quantity as number);
+          });
+        }
+      } catch (e) {
+        console.error('Error parsing hotel ancillaries:', e);
+      }
+    }
+    
+    // Add flight cost
+    if (savedFlight && savedFlight !== 'null') {
+      try {
+        const flightData = JSON.parse(savedFlight);
+        const passengers = parseInt(bookingState.adults) + parseInt(bookingState.children) + parseInt(bookingState.infants);
+        const flightTotal = (flightData.price || flightData.pricePerPerson || 0) * passengers;
+        calculatedTotal += flightTotal;
+      } catch (e) {
+        console.error('Error parsing flight data:', e);
+      }
+    }
+    
+    setTotal(calculatedTotal);
+  }, [setTotal, getNumberOfNights, bookingState]);
 
   const updateQuantity = (id: number, change: number) => {
     const currentQty = quantities[id] || 0;

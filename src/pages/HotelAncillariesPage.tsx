@@ -1,3 +1,4 @@
+
 import Header from "@/components/Header";
 import BookingBand from "@/components/BookingBand";
 import LoaderOverlay from "@/components/LoaderOverlay";
@@ -48,10 +49,43 @@ const ancillaries = [
 
 const HotelAncillariesPage = () => {
   const navigate = useNavigate();
-  const { addToTotal, subtractFromTotal } = useBooking();
+  const { addToTotal, subtractFromTotal, setTotal, getNumberOfNights, bookingState } = useBooking();
   const [quantities, setQuantities] = useState<{[key: number]: number}>({});
   const [showLoader, setShowLoader] = useState(true);
-  const [previousQuantities, setPreviousQuantities] = useState<{[key: number]: number}>({});
+
+  useEffect(() => {
+    // Recalculate total from localStorage when page loads
+    const savedHotel = localStorage.getItem('selectedHotel');
+    const savedFlight = localStorage.getItem('selectedFlight');
+    
+    let calculatedTotal = 0;
+    
+    // Add hotel cost
+    if (savedHotel && savedHotel !== 'null') {
+      try {
+        const hotelData = JSON.parse(savedHotel);
+        const nights = getNumberOfNights();
+        const hotelTotal = (hotelData.price || hotelData.pricePerNight || 0) * nights;
+        calculatedTotal += hotelTotal;
+      } catch (e) {
+        console.error('Error parsing hotel data:', e);
+      }
+    }
+    
+    // Add flight cost
+    if (savedFlight && savedFlight !== 'null') {
+      try {
+        const flightData = JSON.parse(savedFlight);
+        const passengers = parseInt(bookingState.adults) + parseInt(bookingState.children) + parseInt(bookingState.infants);
+        const flightTotal = (flightData.price || flightData.pricePerPerson || 0) * passengers;
+        calculatedTotal += flightTotal;
+      } catch (e) {
+        console.error('Error parsing flight data:', e);
+      }
+    }
+    
+    setTotal(calculatedTotal);
+  }, [setTotal, getNumberOfNights, bookingState]);
 
   const updateQuantity = (id: number, change: number) => {
     const currentQty = quantities[id] || 0;
