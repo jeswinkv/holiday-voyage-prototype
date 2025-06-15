@@ -47,11 +47,20 @@ const SummaryPage = () => {
   });
 
   useEffect(() => {
-    // Load booking summary from localStorage or context
+    console.log('Loading booking summary data...');
+    console.log('LocalStorage keys:', Object.keys(localStorage));
+    
+    // Load booking summary from localStorage
     const savedHotel = localStorage.getItem('selectedHotel');
     const savedHotelAncillaries = localStorage.getItem('selectedHotelAncillaries');
     const savedFlight = localStorage.getItem('selectedFlight');
     const savedFlightAncillaries = localStorage.getItem('selectedFlightAncillaries');
+
+    console.log('Raw data from localStorage:');
+    console.log('Hotel:', savedHotel);
+    console.log('Hotel ancillaries:', savedHotelAncillaries);
+    console.log('Flight:', savedFlight);
+    console.log('Flight ancillaries:', savedFlightAncillaries);
 
     const summary: BookingSummaryData = {
       hotel: null,
@@ -61,94 +70,103 @@ const SummaryPage = () => {
     };
 
     // Parse hotel data
-    if (savedHotel) {
+    if (savedHotel && savedHotel !== 'null') {
       try {
         const hotelData = JSON.parse(savedHotel);
+        console.log('Parsed hotel data:', hotelData);
         const nights = getNumberOfNights();
         summary.hotel = {
           name: hotelData.name || "Selected Hotel",
           nights: nights,
-          pricePerNight: hotelData.price || 0,
-          total: (hotelData.price || 0) * nights
+          pricePerNight: hotelData.price || hotelData.pricePerNight || 0,
+          total: (hotelData.price || hotelData.pricePerNight || 0) * nights
         };
       } catch (e) {
-        console.log('Error parsing hotel data:', e);
+        console.error('Error parsing hotel data:', e);
       }
     }
 
     // Parse hotel ancillaries
-    if (savedHotelAncillaries) {
+    if (savedHotelAncillaries && savedHotelAncillaries !== 'null') {
       try {
         const ancillaries = JSON.parse(savedHotelAncillaries);
-        summary.hotelAncillaries = Object.entries(ancillaries)
-          .filter(([_, quantity]) => (quantity as number) > 0)
-          .map(([name, quantity]) => {
-            // Map ancillary names to prices (these should match the ancillaries from HotelAncillariesPage)
-            const priceMap: { [key: string]: number } = {
-              'Couples Spa Package': 180,
-              'Sunset Dolphin Cruise': 85,
-              'Island Hopping Adventure': 120,
-              'Private Beach Dinner': 250,
-              'Scuba Diving Experience': 95
-            };
-            const price = priceMap[name] || 0;
-            return {
-              name,
-              quantity: quantity as number,
-              price,
-              total: price * (quantity as number)
-            };
-          });
+        console.log('Parsed hotel ancillaries:', ancillaries);
+        if (typeof ancillaries === 'object' && ancillaries !== null) {
+          summary.hotelAncillaries = Object.entries(ancillaries)
+            .filter(([_, quantity]) => (quantity as number) > 0)
+            .map(([name, quantity]) => {
+              // Map ancillary names to prices
+              const priceMap: { [key: string]: number } = {
+                'Couples Spa Package': 180,
+                'Sunset Dolphin Cruise': 85,
+                'Island Hopping Adventure': 120,
+                'Private Beach Dinner': 250,
+                'Scuba Diving Experience': 95
+              };
+              const price = priceMap[name] || 0;
+              return {
+                name,
+                quantity: quantity as number,
+                price,
+                total: price * (quantity as number)
+              };
+            });
+        }
       } catch (e) {
-        console.log('Error parsing hotel ancillaries:', e);
+        console.error('Error parsing hotel ancillaries:', e);
       }
     }
 
     // Parse flight data
-    if (savedFlight) {
+    if (savedFlight && savedFlight !== 'null') {
       try {
         const flightData = JSON.parse(savedFlight);
+        console.log('Parsed flight data:', flightData);
         const passengers = parseInt(bookingState.adults) + parseInt(bookingState.children) + parseInt(bookingState.infants);
         summary.flight = {
-          airline: flightData.airline || "Selected Airline",
+          airline: flightData.airline || flightData.name || "Selected Flight",
           route: `${bookingState.origin || 'Origin'} to ${bookingState.destination || 'Destination'}`,
           passengers: passengers,
-          pricePerPerson: flightData.price || 0,
-          total: (flightData.price || 0) * passengers
+          pricePerPerson: flightData.price || flightData.pricePerPerson || 0,
+          total: (flightData.price || flightData.pricePerPerson || 0) * passengers
         };
       } catch (e) {
-        console.log('Error parsing flight data:', e);
+        console.error('Error parsing flight data:', e);
       }
     }
 
     // Parse flight ancillaries
-    if (savedFlightAncillaries) {
+    if (savedFlightAncillaries && savedFlightAncillaries !== 'null') {
       try {
         const ancillaries = JSON.parse(savedFlightAncillaries);
-        summary.flightAncillaries = Object.entries(ancillaries)
-          .filter(([_, quantity]) => (quantity as number) > 0)
-          .map(([name, quantity]) => {
-            // Map ancillary names to prices (these should match the ancillaries from FlightAncillariesPage)
-            const priceMap: { [key: string]: number } = {
-              'Premium Meal Selection': 35,
-              'In-Flight WiFi': 15,
-              'Extra Legroom Seat': 85,
-              'Premium Beverage Package': 45,
-              'Priority Boarding': 25
-            };
-            const price = priceMap[name] || 0;
-            return {
-              name,
-              quantity: quantity as number,
-              price,
-              total: price * (quantity as number)
-            };
-          });
+        console.log('Parsed flight ancillaries:', ancillaries);
+        if (typeof ancillaries === 'object' && ancillaries !== null) {
+          summary.flightAncillaries = Object.entries(ancillaries)
+            .filter(([_, quantity]) => (quantity as number) > 0)
+            .map(([name, quantity]) => {
+              // Map ancillary names to prices
+              const priceMap: { [key: string]: number } = {
+                'Premium Meal Selection': 35,
+                'In-Flight WiFi': 15,
+                'Extra Legroom Seat': 85,
+                'Premium Beverage Package': 45,
+                'Priority Boarding': 25
+              };
+              const price = priceMap[name] || 0;
+              return {
+                name,
+                quantity: quantity as number,
+                price,
+                total: price * (quantity as number)
+              };
+            });
+        }
       } catch (e) {
-        console.log('Error parsing flight ancillaries:', e);
+        console.error('Error parsing flight ancillaries:', e);
       }
     }
 
+    console.log('Final summary:', summary);
     setBookingSummary(summary);
   }, [bookingState, getNumberOfNights]);
 
@@ -169,14 +187,6 @@ const SummaryPage = () => {
   const taxesAndFees = Math.round(subtotal * 0.15); // 15% taxes and fees
   const finalTotal = subtotal + taxesAndFees;
 
-  // Update booking context total
-  useEffect(() => {
-    // Only update if there's a difference to avoid infinite loops
-    if (bookingState.totalAmount !== finalTotal) {
-      // We'll update this through the context but for now just display the calculated total
-    }
-  }, [finalTotal, bookingState.totalAmount]);
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -194,6 +204,20 @@ const SummaryPage = () => {
                 Review your holiday details before payment
               </p>
             </div>
+
+            {/* Debug info - remove this in production */}
+            <Card className="bg-yellow-50 border-yellow-200">
+              <CardContent className="p-4">
+                <h4 className="font-semibold text-yellow-800 mb-2">Debug Info:</h4>
+                <div className="text-sm space-y-1">
+                  <div>Hotel selected: {bookingSummary.hotel ? 'Yes' : 'No'}</div>
+                  <div>Hotel ancillaries: {bookingSummary.hotelAncillaries.length}</div>
+                  <div>Flight selected: {bookingSummary.flight ? 'Yes' : 'No'}</div>
+                  <div>Flight ancillaries: {bookingSummary.flightAncillaries.length}</div>
+                  <div>Subtotal: £{subtotal}</div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Hotel Summary */}
             {bookingSummary.hotel && (
@@ -281,6 +305,12 @@ const SummaryPage = () => {
               <Card>
                 <CardContent className="p-6 text-center">
                   <p className="text-gray-600">No items selected yet. Please go back and make your selections.</p>
+                  <Button 
+                    onClick={() => navigate('/hotels')} 
+                    className="mt-4 bg-ocean-600 hover:bg-ocean-700"
+                  >
+                    Start Booking
+                  </Button>
                 </CardContent>
               </Card>
             )}
